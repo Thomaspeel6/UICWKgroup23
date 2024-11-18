@@ -87,7 +87,7 @@ This survey reflects on how the project has impacted your understanding of susta
 
 ## Summary of Marks Allocation
 
-- **Total Marks Available**: 10 marks
+- **Total Marks Available**: 10 marks 9 max for us 
 - **Breakdown**:
     - Weekly Group Evaluations (4 evaluations at 1 mark each): **4 marks**
     - Consent and Evidence of Feedback (2 marks for full completion): **2 marks**
