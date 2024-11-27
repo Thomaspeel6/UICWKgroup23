@@ -35,6 +35,7 @@ private:
     QPushButton* statsButton;
     QTableView* table;
     QLabel* fileInfo;
+    QTabWidget* tabWidget;
     StatsDialog* statsDialog;
 
 private slots:

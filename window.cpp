@@ -3,6 +3,11 @@
 #include <iostream>
 #include "window.hpp"
 #include "stats.hpp"
+#include "PollutantOverviewPage.hpp"
+#include "POPsPage.hpp"
+#include "EnvironmentalLitterIndicatorsPage.hpp"
+#include "FluorinatedCompoundsPage.hpp"
+#include "ComplianceDashboardPage.hpp"
 
 #include <QDebug>
 
@@ -28,14 +33,27 @@ void waterQualityWindow::createMainWidget()
 {
     table = new QTableView();
     table->setModel(&model);
-
+    tabWidget = new QTabWidget();
     QFont tableFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     table->setFont(tableFont);
 
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     table->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    
+    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage();
+    POPsPage* popsPage = new POPsPage();
+    EnvironmentalLitterIndicatorsPage* litterPage = new EnvironmentalLitterIndicatorsPage();
+    FluorinatedCompoundsPage* fluorinatedPage = new FluorinatedCompoundsPage();
+    ComplianceDashboardPage* compliancePage = new ComplianceDashboardPage();
 
-    setCentralWidget(table);
+    // Add tabs to the tab widget
+    tabWidget->addTab(pollutantOverviewPage, "Pollutant Overview");
+    tabWidget->addTab(popsPage, "POPs");
+    tabWidget->addTab(litterPage, "Environmental Litter Indicators");
+    tabWidget->addTab(fluorinatedPage, "Fluorinated Compounds");
+    tabWidget->addTab(compliancePage, "Compliance Dashboard");
+
+    setCentralWidget(tabWidget);
 }
 
 
