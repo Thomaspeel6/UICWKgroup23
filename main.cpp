@@ -1,11 +1,11 @@
 #include <QtWidgets>
-#include "window.hpp"
+#include "ComplianceDashboardPage.hpp"
 
 int main(int argc, char* argv[])
 {
   QApplication app(argc, argv);
 
-  waterQualityWindow window;
+  ComplianceDashboardPage window;
   window.show();
 
   return app.exec();
