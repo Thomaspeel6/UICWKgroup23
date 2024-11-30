@@ -1,11 +1,11 @@
 #include <QtWidgets>
-#include "ComplianceDashboardPage.hpp"
+#include "DashboardPage.hpp"
 
 int main(int argc, char* argv[])
 {
   QApplication app(argc, argv);
 
-  ComplianceDashboardPage window;
+  DashboardPage window;
   window.show();
 
   return app.exec();

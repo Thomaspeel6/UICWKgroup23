@@ -10,7 +10,7 @@ qt_standard_project_setup()
 
 qt_add_executable(waterquality
     main.cpp
-    ComplianceDashboardPage.cpp
+    DashboardPage.cpp
 )
 
 target_link_libraries(waterquality PRIVATE Qt6::Widgets)
