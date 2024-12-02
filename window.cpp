@@ -8,7 +8,7 @@
 #include "EnvironmentalLitterIndicatorsPage.hpp"
 #include "FluorinatedCompoundsPage.hpp"
 #include "ComplianceDashboardPage.hpp"
-#include "Dashboard.hpp"
+#include "DashboardPage.hpp"
 
 #include <QDebug>
 
@@ -48,7 +48,7 @@ void waterQualityWindow::createMainWidget()
     ComplianceDashboardPage* compliancePage = new ComplianceDashboardPage();
 
     // Add tabs to the tab widget
-    tabWidget->addTab(Dashboard, "Dashboard");
+    tabWidget->addTab(dashboardPage, "Dashboard");
     tabWidget->addTab(pollutantOverviewPage, "Pollutant Overview");
     tabWidget->addTab(popsPage, "POPs");
     tabWidget->addTab(litterPage, "Environmental Litter Indicators");

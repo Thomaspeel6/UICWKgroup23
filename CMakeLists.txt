@@ -15,6 +15,13 @@ qt_add_executable(waterquality
     model.cpp
     window.cpp
     stats.cpp
+    PollutantOverviewPage.cpp
+    POPsPage.cpp
+    EnvironmentalLitterIndicatorsPage.cpp
+    FluorinatedCompoundsPage.cpp
+    ComplianceDashboardPage.cpp
+    DashboardPage.cpp
+
 )
 
 target_link_libraries(waterquality PRIVATE
