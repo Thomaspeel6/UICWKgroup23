@@ -36,6 +36,12 @@ void DashboardPage::setupDashboard() {
     gridLayout->addWidget(hotspotBtn, 1, 2);
 
     mainLayout->addLayout(gridLayout);
+    connect(pollutantBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPollutantOverview);
+    connect(popsBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPOPsPage);
+    connect(litterBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPollutantOverview);
+    connect(fluorinatedBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPOPsPage);
+    connect(complianceBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPollutantOverview);
+    connect(hotspotBtn &QPushButton::clicked, this, &DashboardPage::navigateToPOPsPage);
 
     QHBoxLayout *bottomLayout = new QHBoxLayout();
     linksBtn = new QPushButton("Links", this);
@@ -69,3 +75,28 @@ QPushButton* DashboardPage::setCard(const QString& text, const QString& color) {
     
     return button;
 }
+
+void DashboardPage::navigateToPollutantOverview() {
+    tabWidget->setCurrentIndex(1); // Navigate to "Pollutant Overview" tab
+}
+
+void DashboardPage::navigateToPOPsPage() {
+    tabWidget->setCurrentIndex(2); // Navigate to "POPs" tab
+}
+
+void DashboardPage::navigateToLitterIndicatorsPage() {
+    tabWidget->setCurrentIndex(3); // Navigate to "Litter Indicators" tab
+}
+
+void DashboardPage::navigateToFluorinatedCompoundsPage() {
+    tabWidget->setCurrentIndex(4); // Navigate to "Fluorinated Compounds" tab
+}
+
+void DashboardPage::navigateToCompliancePage() {
+    tabWidget->setCurrentIndex(5); // Navigate to "Compliance" tab
+}
+
+void DashboardPage::navigateToHotspotsPage() {
+    tabWidget->setCurrentIndex(6); // Navigate to "Geographical Hotspots" tab
+}
+

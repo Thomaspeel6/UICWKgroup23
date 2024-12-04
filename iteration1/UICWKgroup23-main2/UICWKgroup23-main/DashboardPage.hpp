@@ -24,7 +24,15 @@ private:
     QPushButton *hotspotBtn;
     QPushButton *linksBtn;
     QPushButton *languageBtn;
+    QTabWidget* tabWidget;
 
+private slots:
+    void navigateToPollutantOverview();
+    void navigateToPOPsPage();
+    void navigateToLitterIndicatorsPage();
+    void navigateToFluorinatedCompoundsPage();
+    void navigateToCompliancePage();
+    void navigateToHotspotsPage();
 };
 
 #endif 
