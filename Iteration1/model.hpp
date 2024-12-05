@@ -11,7 +11,7 @@ class waterQualityModel: public QAbstractTableModel
     bool hasData() const { return dataset.getSize() > 0; }
 
     int rowCount(const QModelIndex& index) const { return dataset.getSize(); }
-    int columnCount(const QModelIndex& index) const { return 9; }
+    int columnCount(const QModelIndex& index) const { return 17; }
     QVariant data(const QModelIndex&, int) const;
     QVariant headerData(int, Qt::Orientation, int) const;
     const std::vector<waterQuality>& getEntries() const;
