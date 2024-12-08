@@ -28,6 +28,7 @@ void DashboardPage::setupMainDashboard()
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
+    // mainlayout
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setSpacing(20);
     mainLayout->setContentsMargins(20, 20, 20, 20);
@@ -39,11 +40,10 @@ void DashboardPage::setupMainDashboard()
     titleLabel->setStyleSheet(style);
     mainLayout->addWidget(titleLabel);
 
-    // card
     QGridLayout *gridLayout = new QGridLayout();
     gridLayout->setSpacing(15);
     
-    // connect
+    // button
     pollutantBtn = setCard("Pollutant overview", "red");
     popsBtn = setCard("POPs", "orange");
     litterBtn = setCard("Litter Indicators", "green");
@@ -88,12 +88,11 @@ void DashboardPage::showPollutantPage()
     // PollutantOverviewPage
     pollutantPage = new PollutantOverviewPage(&model, this);
     
+    // connect
     connect(pollutantPage, &PollutantOverviewPage::returnToDashboard, this, [this]() {
-        // delete pollutantPage
         pollutantPage->deleteLater();
         pollutantPage = nullptr;
         
-        // reset Dashboard
         setupMainDashboard();
     });
 
