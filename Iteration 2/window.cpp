@@ -45,10 +45,10 @@ void waterQualityWindow::createMainWidget()
 
 
     RawData* rawData = new RawData(&model, this);
-    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage();
-    POPsPage* popsPage = new POPsPage();
+    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(this);
+    POPsPage* popsPage = new POPsPage(tabWidget, this);
     EnvironmentalLitterIndicatorsPage* litterPage = new EnvironmentalLitterIndicatorsPage();
-    FluorinatedCompoundsPage* fluorinatedPage = new FluorinatedCompoundsPage();
+    FluorinatedCompoundsPage* fluorinatedPage = new FluorinatedCompoundsPage(this);
     ComplianceDashboardPage* compliancePage = new ComplianceDashboardPage(this);
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
 

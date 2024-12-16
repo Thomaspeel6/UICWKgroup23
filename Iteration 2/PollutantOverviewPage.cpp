@@ -17,28 +17,6 @@ void PollutantOverviewPage::setupUI()
     mainLayout->setSpacing(20);
     mainLayout->setContentsMargins(20, 20, 20, 20);
     
-    // head buttons
-    QHBoxLayout* buttonsLayout = new QHBoxLayout();
-    QStringList buttonTexts = {"Pollutant Overview", "POPs", "Litter Indicators",
-                              "Fluorinated Compounds", "Compliance", "Geographic Hotspots"};
-    
-    for (const QString& text : buttonTexts) {
-        QPushButton* button = new QPushButton(text);
-        button->setFixedHeight(40);
-        button->setStyleSheet(
-            "QPushButton {"
-            "   background-color: #f8f9fa;"
-            "   border: 1px solid #dee2e6;"
-            "   border-radius: 5px;"
-            "   padding: 5px 15px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #e9ecef;"
-            "}"
-        );
-        buttonsLayout->addWidget(button);
-    }
-    mainLayout->addLayout(buttonsLayout);
 
     // search area
     QHBoxLayout* searchLayout = new QHBoxLayout();
