@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QPushButton>
+#include <QMenu>
+#include <QTranslator>
 
 class DashboardPage : public QWidget
 {
@@ -26,6 +28,9 @@ private:
     QPushButton *languageBtn;
     QTabWidget* tabWidget;
 
+    QMenu *languageMenu;
+    QTranslator translator;
+
 private slots:
     void navigateToPollutantOverview();
     void navigateToPOPsPage();
@@ -33,6 +38,9 @@ private slots:
     void navigateToFluorinatedCompoundsPage();
     void navigateToCompliancePage();
     void navigateToHotspotsPage();
+
+    void showLanguageMenu();
+    void changeLanguage(const QString &languageCode);
 };
 
-#endif 
+#endif

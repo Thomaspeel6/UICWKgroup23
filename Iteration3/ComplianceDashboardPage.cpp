@@ -16,12 +16,12 @@ ComplianceDashboardPage::ComplianceDashboardPage(waterQualityModel* model, QWidg
     locationFilter = new QComboBox(this);
     pollutantFilter = new QComboBox(this);
     complianceStatusFilter = new QComboBox(this);
-    applyFilterButton = new QPushButton("Apply Filters", this);
+    applyFilterButton = new QPushButton(tr("Apply Filters"), this);
     
     // buttons layout 
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    previousPageButton = new QPushButton("Previous", this);
-    nextPageButton = new QPushButton("Next", this);
+    previousPageButton = new QPushButton(tr("Previous"), this);
+    nextPageButton = new QPushButton(tr("Next"), this);
 
     buttonLayout->addWidget(previousPageButton);
     buttonLayout->addWidget(nextPageButton);
@@ -59,7 +59,7 @@ ComplianceDashboardPage::ComplianceDashboardPage(waterQualityModel* model, QWidg
 void ComplianceDashboardPage::loadComplianceThresholds(const QString& filePath) {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "Error", "Unable to open compliance thresholds file.");
+        QMessageBox::critical(this, tr("Error"), tr("Unable to open compliance thresholds file."));
         return;
     }
 
@@ -87,18 +87,17 @@ void ComplianceDashboardPage::populateFilters() {
     locationFilter->clear();
     pollutantFilter->clear();
 
-    locationFilter->addItem("All Locations");
-    pollutantFilter->addItem("All Pollutants");
-    complianceStatusFilter->addItem("All Compliance");
-    complianceStatusFilter->addItem("Compliant");
-    complianceStatusFilter->addItem("Non-Compliant");
-    complianceStatusFilter->addItem("Near Compliance");
+    locationFilter->addItem(tr("All Locations"));
+    pollutantFilter->addItem(tr("All Pollutants"));
+    complianceStatusFilter->addItem(tr("All Compliance"));
+    complianceStatusFilter->addItem(tr("Compliant"));
+    complianceStatusFilter->addItem(tr("Non-Compliant"));
+    complianceStatusFilter->addItem(tr("Near Compliance"));
 
 
     QSet<QString> locations;
     QSet<QString> pollutants;
 
-    std::cout << "Populating filters...\n";
 
     for (const auto& record : model->getDataset().getData()) {
         QString location = QString::fromStdString(record.getSamplingPointLabel());
@@ -136,11 +135,11 @@ void ComplianceDashboardPage::onApplyFilters() {
                 QString complianceStatus;
 
                 if (result <= threshold * 0.95) {
-                    complianceStatus = "Compliant";
+                    complianceStatus = tr("Compliant");
                 } else if (result <= threshold) {
-                    complianceStatus = "Near Compliance";
+                    complianceStatus = tr("Near Compliance");
                 } else {
-                    complianceStatus = "Non-Compliant";
+                    complianceStatus = tr("Non-Compliant");
                 }
 
                 if (selectedComplianceStatus == "All Compliance" || complianceStatus == selectedComplianceStatus) {
@@ -179,10 +178,10 @@ void ComplianceDashboardPage::updatePagination() {
         QWidget* card = new QWidget(this);
         QVBoxLayout* cardLayout = new QVBoxLayout(card);
 
-        QLabel* locationLabel = new QLabel(QString("Location: %1").arg(record["location"].toString()), this);
-        QLabel* pollutantLabel = new QLabel(QString("Pollutant: %1").arg(record["pollutant"].toString()), this);
-        QLabel* resultLabel = new QLabel(QString("Result: %1").arg(record["result"].toDouble()), this);
-        QLabel* statusLabel = new QLabel(QString("Status: %1").arg(record["status"].toString()), this);
+        QLabel* locationLabel = new QLabel(QString(tr("Location: %1")).arg(record["location"].toString()), this);
+        QLabel* pollutantLabel = new QLabel(QString(tr("Pollutant: %1")).arg(record["pollutant"].toString()), this);
+        QLabel* resultLabel = new QLabel(QString(tr("Result: %1")).arg(record["result"].toDouble()), this);
+        QLabel* statusLabel = new QLabel(QString(tr("Status: %1")).arg(record["status"].toString()), this);
 
         // setting card background color for ease of compliance undesrtanding
         QString color = record["status"] == "Compliant" ? "green" :

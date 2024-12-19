@@ -29,7 +29,7 @@ waterQualityWindow::waterQualityWindow(): QMainWindow(), statsDialog(nullptr)
     addHelpMenu();
 
     setMinimumWidth(MIN_WIDTH);
-    setWindowTitle("Water Quality Tool");
+    setWindowTitle(tr("Water Quality Tool"));
 }
 
 
@@ -53,37 +53,17 @@ void waterQualityWindow::createMainWidget()
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
 
     // Add tabs to the tab widget
-    tabWidget->addTab(rawData, "Raw Data");
-    tabWidget->addTab(dashboardPage, "Dashboard");
-    tabWidget->addTab(pollutantOverviewPage, "Pollutant Overview");
-    tabWidget->addTab(popsPage, "POPs");
-    tabWidget->addTab(litterPage, "Environmental Litter Indicators");
-    tabWidget->addTab(fluorinatedPage, "Fluorinated Compounds");
-    tabWidget->addTab(compliancePage, "Compliance Dashboard");
+    tabWidget->addTab(rawData, tr("Raw Data"));
+    tabWidget->addTab(dashboardPage, tr("Dashboard"));
+    tabWidget->addTab(pollutantOverviewPage, tr("Pollutant Overview"));
+    tabWidget->addTab(popsPage, tr("POPs"));
+    tabWidget->addTab(litterPage, tr("Environmental Litter Indicators"));
+    tabWidget->addTab(fluorinatedPage, tr("Fluorinated Compounds"));
+    tabWidget->addTab(compliancePage, tr("Compliance Dashboard"));
 
     tabWidget->setCurrentIndex(1);
 
     setCentralWidget(tabWidget);
-}
-
-
-
-void waterQualityWindow::createButtons()
-{
-
-    statsButton = new QPushButton("Statistics");
-
-    connect(statsButton, SIGNAL(clicked()), this, SLOT(displayStats()));
-}
-
-
-void waterQualityWindow::createToolBar()
-{
-    QToolBar* toolBar = new QToolBar();
-
-    toolBar->addWidget(statsButton);
-
-    addToolBar(Qt::TopToolBarArea, toolBar);
 }
 
 
@@ -93,11 +73,11 @@ void waterQualityWindow::createStatusBar()
     QStatusBar* status = statusBar();
 
     // file info label
-    fileInfoLabel = new QLabel("Current File: <none>", this);
+    fileInfoLabel = new QLabel(tr("Current File: <none>"), this);
     status->addWidget(fileInfoLabel);
 
     // compliace data uploaded label
-    QLabel* complianceLabel = new QLabel("Compliance Data Uploaded:", this);
+    QLabel* complianceLabel = new QLabel(tr("Compliance Data Uploaded:"), this);
     status->addWidget(complianceLabel);
 
     // compliance data checkbox
@@ -118,19 +98,19 @@ void waterQualityWindow::createStatusBar()
 
 void waterQualityWindow::addFileMenu()
 {
-    QAction* uploadRealDataAction = new QAction("Upload &Data", this);
+    QAction* uploadRealDataAction = new QAction(tr("Upload &Data"), this);
     uploadRealDataAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(uploadRealDataAction, &QAction::triggered, this, &waterQualityWindow::uploadRealData);
 
-    QAction* uploadComplianceDataAction = new QAction("Upload &Compliance Data", this);
+    QAction* uploadComplianceDataAction = new QAction(tr("Upload &Compliance Data"), this);
     uploadComplianceDataAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
     connect(uploadComplianceDataAction, &QAction::triggered, this, &waterQualityWindow::uploadComplianceData);
 
-    QAction* closeAction = new QAction("Quit", this);
+    QAction* closeAction = new QAction(tr("Quit"), this);
     closeAction->setShortcut(QKeySequence::Close);
     connect(closeAction, &QAction::triggered, this, &QWidget::close);
 
-    QMenu* fileMenu = menuBar()->addMenu("&File");
+    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(uploadRealDataAction);
     fileMenu->addAction(uploadComplianceDataAction);
     fileMenu->addAction(closeAction);
@@ -140,13 +120,13 @@ void waterQualityWindow::addFileMenu()
 
 void waterQualityWindow::addHelpMenu()
 {
-    QAction* aboutAction = new QAction("&About", this);
+    QAction* aboutAction = new QAction(tr("&About"), this);
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 
-    QAction* aboutQtAction = new QAction("About &Qt", this);
+    QAction* aboutQtAction = new QAction(tr("About &Qt"), this);
     connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-    QMenu* helpMenu = menuBar()->addMenu("&Help");
+    QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
     helpMenu->addAction(aboutQtAction);
 }
@@ -179,17 +159,17 @@ void waterQualityWindow::updateProgressBar(QTimer* timer, const QString& success
 void waterQualityWindow::uploadRealData()
 {
     QString filePath = QFileDialog::getOpenFileName(
-        this, "Select Real Data CSV File", ".", "CSV Files (*.csv)"
+        this, tr("Select Real Data CSV File"), ".", tr("CSV Files (*.csv)")
     );
 
     if (filePath.isEmpty()) {
-        QMessageBox::information(this, "No File Selected", "Please select a valid CSV file.");
+        QMessageBox::information(this, tr("No File Selected"), tr("Please select a valid CSV file."));
         return;
     }
 
     try {
         
-        startProgressBar("Loading data...");
+        startProgressBar(tr("Loading data..."));
 
  
         model.updateFromFile(filePath);
@@ -197,42 +177,42 @@ void waterQualityWindow::uploadRealData()
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
 
-        fileInfoLabel->setText(QString("Loaded File: %1").arg(fileName));
+        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(fileName));
 
     
         QTimer* timer = new QTimer(this);
-        updateProgressBar(timer, "Data loaded successfully!");
+        updateProgressBar(timer, tr("Data loaded successfully!"));
 
 
         table->resizeColumnsToContents();
     } catch (const std::exception& error) {
-        QMessageBox::critical(this, "Error", QString("Failed to load real data: %1").arg(error.what()));
+        QMessageBox::critical(this, tr("Error"), QString(tr("Failed to load real data: %1")).arg(error.what()));
         progressBar->setVisible(false);
     }
 }
 
 void waterQualityWindow::uploadComplianceData() {
     QString filePath = QFileDialog::getOpenFileName(
-        this, "Select Compliance Data CSV File", ".", "CSV Files (*.csv)"
+        this, tr("Select Compliance Data CSV File"), ".", tr("CSV Files (*.csv)")
     );
 
     if (filePath.isEmpty()) {
-        QMessageBox::information(this, "No File Selected", "Please select a valid CSV file.");
+        QMessageBox::information(this, tr("No File Selected"), tr("Please select a valid CSV file."));
         return;
     }
 
     try {
-        startProgressBar("Loading compliance data...");
+        startProgressBar(tr("Loading compliance data..."));
         compliancePage->loadComplianceThresholds(filePath);
 
 
 
         QTimer* timer = new QTimer(this);
-        updateProgressBar(timer, "Compliance data loaded successfully!");
+        updateProgressBar(timer, tr("Compliance data loaded successfully!"));
         complianceCheckBox->setChecked(true);
 
     } catch (const std::exception& e) {
-        QMessageBox::critical(this, "Error", QString("Failed to load compliance data: %1").arg(e.what()));
+        QMessageBox::critical(this, tr("Error"), QString(tr("Failed to load compliance data: %1")).arg(e.what()));
         progressBar->setVisible(false);
     }
 }
@@ -255,8 +235,8 @@ void waterQualityWindow::displayStats()
 
 void waterQualityWindow::about()
 {
-  QMessageBox::about(this, "About Water Quality Tool",
-    "Water Quality Tool displays and analyzes Water Quality loaded from"
-    "a CSV file");
+  QMessageBox::about(this, tr("About Water Quality Tool"),
+    tr("Water Quality Tool displays and analyzes Water Quality loaded from")
+    tr("a CSV file"));
 }
 
