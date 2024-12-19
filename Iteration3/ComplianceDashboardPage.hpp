@@ -17,7 +17,8 @@ class ComplianceDashboardPage : public QWidget
 public:
     explicit ComplianceDashboardPage(waterQualityModel* model, QWidget* parent = nullptr);
 
-    void loadComplianceThresholds(const QString& filePath); 
+    void loadComplianceThresholds(const QString& filePath);
+    void retranslateUi(); 
 
 private:
 

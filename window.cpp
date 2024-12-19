@@ -1,6 +1,8 @@
 #include <QtWidgets>
 #include <stdexcept>
 #include <iostream>
+
+
 #include "window.hpp"
 #include "stats.hpp"
 #include "PollutantOverviewPage.hpp"
@@ -9,6 +11,7 @@
 #include "FluorinatedCompoundsPage.hpp"
 #include "ComplianceDashboardPage.hpp"
 #include "DashboardPage.hpp"
+#include "RawData.hpp"
 
 #include <QDebug>
 
@@ -18,186 +21,212 @@ static const int MIN_WIDTH = 1000;
 waterQualityWindow::waterQualityWindow(): QMainWindow(), statsDialog(nullptr)
 {
     createMainWidget();
-    //createFileSelectors();
-    createButtons();
-    createToolBar();
     createStatusBar();
     addFileMenu();
     addHelpMenu();
-
+    retranslateUi();
     setMinimumWidth(MIN_WIDTH);
-    setWindowTitle("Water Quality Tool");
+    setWindowTitle(tr("Water Quality Tool"));
 }
 
 
 void waterQualityWindow::createMainWidget()
 {
     table = new QTableView();
-    table->setModel(&model);
-    tabWidget = new QTabWidget();
+    tabWidget = new QTabWidget(this);
     QFont tableFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     table->setFont(tableFont);
 
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     table->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    
-    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage();
-    POPsPage* popsPage = new POPsPage();
+
+
+    RawData* rawData = new RawData(&model, this);
+    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(this);
+    POPsPage* popsPage = new POPsPage(tabWidget, this);
     EnvironmentalLitterIndicatorsPage* litterPage = new EnvironmentalLitterIndicatorsPage();
-    FluorinatedCompoundsPage* fluorinatedPage = new FluorinatedCompoundsPage();
-    ComplianceDashboardPage* compliancePage = new ComplianceDashboardPage();
+    FluorinatedCompoundsPage* fluorinatedPage = new FluorinatedCompoundsPage(this);
+    compliancePage = new ComplianceDashboardPage(&model, this);
+    DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
+
+    connect(this, &waterQualityWindow::languageChanged, dashboardPage, &DashboardPage::retranslateUi);
+    //connect(this, &waterQualityWindow::languageChanged, rawData, &RawData::retranslateUi);
+    //connect(this, &waterQualityWindow::languageChanged, pollutantOverviewPage, &PollutantOverviewPage::retranslateUi);
+    //connect(this, &waterQualityWindow::languageChanged, popsPage, &POPsPage::retranslateUi);
+    //connect(this, &waterQualityWindow::languageChanged, litterPage, &EnvironmentalLitterIndicatorsPage::retranslateUi);
+    //connect(this, &waterQualityWindow::languageChanged, fluorinatedPage, &FluorinatedCompoundsPage::retranslateUi);
+    connect(this, &waterQualityWindow::languageChanged, compliancePage, &ComplianceDashboardPage::retranslateUi);
+    connect(this, &waterQualityWindow::languageChanged, this, &waterQualityWindow::retranslateUi);
+
+
+    // connection to dahsbaord button for chnage langauge
+    connect(dashboardPage, &DashboardPage::requestLanguageChange, this, &waterQualityWindow::changeLanguage);
 
     // Add tabs to the tab widget
-    tabWidget->addTab(dashboardPage, "Dashboard");
-    tabWidget->addTab(pollutantOverviewPage, "Pollutant Overview");
-    tabWidget->addTab(popsPage, "POPs");
-    tabWidget->addTab(litterPage, "Environmental Litter Indicators");
-    tabWidget->addTab(fluorinatedPage, "Fluorinated Compounds");
-    tabWidget->addTab(compliancePage, "Compliance Dashboard");
+    tabWidget->addTab(rawData, tr("Raw Data"));
+    tabWidget->addTab(dashboardPage, tr("Dashboard"));
+    tabWidget->addTab(pollutantOverviewPage, tr("Pollutant Overview"));
+    tabWidget->addTab(popsPage, tr("POPs"));
+    tabWidget->addTab(litterPage, tr("Environmental Litter Indicators"));
+    tabWidget->addTab(fluorinatedPage, tr("Fluorinated Compounds"));
+    tabWidget->addTab(compliancePage, tr("Compliance Dashboard"));
+
+    tabWidget->setCurrentIndex(1);
 
     setCentralWidget(tabWidget);
 }
 
 
-/*void QuakeWindow::createFileSelectors()
-{
-  QStringList significanceOptions;
-  significanceOptions << "significant" << "4.5" << "2.5" << "1.0" << "all";
-  significance = new QComboBox();
-  significance->addItems(significanceOptions);
-
-  QStringList periodOptions;
-  periodOptions << "hour" << "day" << "week" << "month";
-  period = new QComboBox();
-  period->addItems(periodOptions);
-}*/
-
-
-void waterQualityWindow::createButtons()
-{
-    loadButton = new QPushButton("Load Data");
-    statsButton = new QPushButton("Statistics");
-
-    connect(loadButton, SIGNAL(clicked()), this, SLOT(openCSV()));
-    connect(statsButton, SIGNAL(clicked()), this, SLOT(displayStats()));
-}
-
-
-void waterQualityWindow::createToolBar()
-{
-    QToolBar* toolBar = new QToolBar();
-
-    toolBar->addWidget(loadButton);
-    toolBar->addWidget(statsButton);
-
-    addToolBar(Qt::TopToolBarArea, toolBar);
-}
-
-
 void waterQualityWindow::createStatusBar()
 {
-    fileInfo = new QLabel("Current file: <none>");
+    // create the status bar
     QStatusBar* status = statusBar();
-    status->addWidget(fileInfo);
+
+    // file info label
+    fileInfoLabel = new QLabel(tr("Current File: <none>"), this);
+    status->addWidget(fileInfoLabel);
+
+    // compliace data uploaded label
+    complianceLabel = new QLabel(tr("Compliance Data Uploaded:"), this);
+    status->addWidget(complianceLabel);
+
+    // compliance data checkbox
+    complianceCheckBox = new QCheckBox(this);
+    complianceCheckBox->setEnabled(false); 
+    complianceCheckBox->setChecked(false); 
+    status->addWidget(complianceCheckBox);
+
+    // progress bar
+    progressBar = new QProgressBar(this);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(0);
+    progressBar->setTextVisible(true);
+    progressBar->setVisible(false); // hidden unless called
+    status->addPermanentWidget(progressBar);
 }
 
 
 void waterQualityWindow::addFileMenu()
 {
-    QAction* locAction = new QAction("Set Data &Location", this);
-    locAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
-    connect(locAction, SIGNAL(triggered()), this, SLOT(setDataLocation()));
+    QAction* uploadRealDataAction = new QAction(tr("Upload &Data"), this);
+    uploadRealDataAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+    connect(uploadRealDataAction, &QAction::triggered, this, &waterQualityWindow::uploadRealData);
 
-    QAction* closeAction = new QAction("Quit", this);
+    QAction* uploadComplianceDataAction = new QAction(tr("Upload &Compliance Data"), this);
+    uploadComplianceDataAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
+    connect(uploadComplianceDataAction, &QAction::triggered, this, &waterQualityWindow::uploadComplianceData);
+
+    QAction* closeAction = new QAction(tr("Quit"), this);
     closeAction->setShortcut(QKeySequence::Close);
-    connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(closeAction, &QAction::triggered, this, &QWidget::close);
 
-    QMenu* fileMenu = menuBar()->addMenu("&File");
-    fileMenu->addAction(locAction);
+    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(uploadRealDataAction);
+    fileMenu->addAction(uploadComplianceDataAction);
     fileMenu->addAction(closeAction);
 }
 
 
+
 void waterQualityWindow::addHelpMenu()
 {
-    QAction* aboutAction = new QAction("&About", this);
+    QAction* aboutAction = new QAction(tr("&About"), this);
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 
-    QAction* aboutQtAction = new QAction("About &Qt", this);
+    QAction* aboutQtAction = new QAction(tr("About &Qt"), this);
     connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
-    QMenu* helpMenu = menuBar()->addMenu("&Help");
+    QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAction);
     helpMenu->addAction(aboutQtAction);
 }
 
-
-void waterQualityWindow::setDataLocation()
+void waterQualityWindow::startProgressBar(const QString& message)
 {
-    QString directory = QFileDialog::getExistingDirectory(
-        this, "Data Location", ".",
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-    if (directory.length() > 0) {
-        dataLocation = directory;
-    }
+    progressBar->setVisible(true);
+    progressBar->setValue(0);
+    statusBar()->showMessage(message);
 }
 
-
-void waterQualityWindow::openCSV()
+void waterQualityWindow::updateProgressBar(QTimer* timer, const QString& successMessage)
 {
-    if (dataLocation.isEmpty()) {
-        QMessageBox::critical(this, "Data Location Error",
-            "Data location has not been set!\n\n"
-            "You can specify this via the File menu."
-        );
+    int progressValue = 0;
+
+    connect(timer, &QTimer::timeout, [=, this]() mutable {
+        progressValue += 11;
+        progressBar->setValue(progressValue);
+
+        if (progressValue >= 99) {
+            timer->stop();
+            progressBar->setVisible(false);
+            statusBar()->showMessage(successMessage, 5000); 
+        }
+    });
+
+    timer->start(400); 
+}
+
+void waterQualityWindow::uploadRealData()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this, tr("Select Real Data CSV File"), ".", tr("CSV Files (*.csv)")
+    );
+
+    if (filePath.isEmpty()) {
+        QMessageBox::information(this, tr("No File Selected"), tr("Please select a valid CSV file."));
         return;
     }
-
-    QString path = dataLocation + "/Y-2024.csv";
 
     try {
-        model.updateFromFile(path);
+        
+        startProgressBar(tr("Loading data..."));
+
+ 
+        model.updateFromFile(filePath);
+
+        QFileInfo fileInfo(filePath);
+        QString fileName = fileInfo.fileName();
+
+        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(fileName));
+
+    
+        QTimer* timer = new QTimer(this);
+        updateProgressBar(timer, tr("Data loaded successfully!"));
+
+
+        table->resizeColumnsToContents();
+    } catch (const std::exception& error) {
+        QMessageBox::critical(this, tr("Error"), QString(tr("Failed to load real data: %1")).arg(error.what()));
+        progressBar->setVisible(false);
     }
-    catch (const std::exception& error) {
-        QMessageBox::critical(this, "CSV File Error", 
-            QString("Error loading file: %1\n\nError: %2")
-            .arg(path)
-            .arg(error.what()));
+}
+
+void waterQualityWindow::uploadComplianceData() {
+    QString filePath = QFileDialog::getOpenFileName(
+        this, tr("Select Compliance Data CSV File"), ".", tr("CSV Files (*.csv)")
+    );
+
+    if (filePath.isEmpty()) {
+        QMessageBox::information(this, tr("No File Selected"), tr("Please select a valid CSV file."));
         return;
     }
 
-    fileInfo->setText(QString("Current file: <kbd>Y-2024.csv</kbd>"));
-    table->resizeColumnsToContents();
+    try {
+        startProgressBar(tr("Loading compliance data..."));
+        compliancePage->loadComplianceThresholds(filePath);
 
-/*  if (statsDialog != nullptr && statsDialog->isVisible()) {
-        statsDialog->update(model.meanResult(), 
-                            model.highestResult().getResult());
-    }*/
 
-    if (statsDialog != nullptr && statsDialog->isVisible()) {
-        statsDialog->update("N/A", "N/A");
-    }
-    qDebug() << "Trying to open file:" << path;
-}
 
-/*
-void waterQualityWindow::displayStats()
-{
-    if (model.hasData()) {
-        if (statsDialog == nullptr) {
-            statsDialog = new StatsDialog(this);
-        }
+        QTimer* timer = new QTimer(this);
+        updateProgressBar(timer, tr("Compliance data loaded successfully!"));
+        complianceCheckBox->setChecked(true);
 
-        statsDialog->update(model.meanResult(), 
-                          model.highestResult().getResult());
-
-        statsDialog->show();
-        statsDialog->raise();
-        statsDialog->activateWindow();
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, tr("Error"), QString(tr("Failed to load compliance data: %1")).arg(e.what()));
+        progressBar->setVisible(false);
     }
 }
-*/
+
 
 void waterQualityWindow::displayStats()
 {
@@ -214,9 +243,59 @@ void waterQualityWindow::displayStats()
     }
 }
 
+void waterQualityWindow::onLanguageChanged() {
+    // Update dynamic elements in the main window
+    setWindowTitle(tr("Water Quality Tool"));
+}
+
 void waterQualityWindow::about()
 {
-  QMessageBox::about(this, "About Water Quality Tool",
-    "Water Quality Tool displays and analyzes Water Quality loaded from"
-    "a CSV file");
+    QMessageBox::about(this, tr("About Water Quality Tool"),
+        tr("Water Quality Tool displays and analyzes Water Quality loaded from a CSV file."));
+}
+
+void waterQualityWindow::changeLanguage(const QString& languageCode) {
+    qApp->removeTranslator(&translator);
+
+    QString path = QCoreApplication::applicationDirPath() + "/translations/translations_" + languageCode + ".qm";
+    if (translator.load(path)) {
+        qApp->installTranslator(&translator);
+        std::cout << "Successfully loaded translation for language: " << languageCode.toStdString() << std::endl;
+        emit languageChanged(); // Notify all connected components
+    } else {
+        std::cout << "Failed to load translation file from: " << path.toStdString() << std::endl;
+    }
+}
+
+
+void waterQualityWindow::retranslateUi() {
+
+    std::cout << "waterQualityWindow::retranslateUi() called" << std::endl;
+
+    // Update main window title
+    setWindowTitle(tr("Water Quality Tool"));
+
+    // Update tab titles
+    tabWidget->setTabText(0, tr("Raw Data"));
+    tabWidget->setTabText(1, tr("Dashboard"));
+    tabWidget->setTabText(2, tr("Pollutant Overview"));
+    tabWidget->setTabText(3, tr("POPs"));
+    tabWidget->setTabText(4, tr("Environmental Litter Indicators"));
+    tabWidget->setTabText(5, tr("Fluorinated Compounds"));
+    tabWidget->setTabText(6, tr("Compliance Dashboard"));
+
+    // Update status bar
+    fileInfoLabel->setText(tr("Current File: <none>"));
+    if (complianceLabel) {
+        complianceLabel->setText(tr("Compliance Data Uploaded:"));
+    } else {
+        std::cerr << "Error: complianceLabel is nullptr!" << std::endl;
+    }
+    progressBar->setFormat(tr("%p% Loaded"));
+
+    // Update menu bar
+    menuBar()->clear(); // Rebuild menus to reflect translations
+    addFileMenu();
+    addHelpMenu();
+
 }

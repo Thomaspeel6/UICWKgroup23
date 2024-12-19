@@ -3,7 +3,10 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
+#include <QApplication>
 #include <QMenu>
+#include <iostream>
+
 
 DashboardPage::DashboardPage(QTabWidget* tabWidget, QWidget* parent)
     : QWidget(parent), tabWidget(tabWidget)
@@ -14,7 +17,7 @@ DashboardPage::DashboardPage(QTabWidget* tabWidget, QWidget* parent)
 void DashboardPage::setupDashboard() {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    QLabel *titleLabel = new QLabel(tr("Water Quality Monitor"), this);
+    titleLabel = new QLabel(tr("Water Quality Monitor"), this);
     titleLabel->setAlignment(Qt::AlignCenter);
     QString style = "margin-top: 0%; font: bold 16px; text-align: center;";
     titleLabel->setStyleSheet(style);
@@ -59,13 +62,9 @@ void DashboardPage::setupDashboard() {
 
     mainLayout->addLayout(bottomLayout);
 
-    // Create Language Menu
-    languageMenu = new QMenu(languageBtn);
-    languageMenu->addAction("English", [=]() { changeLanguage("en"); });
-    languageMenu->addAction("French", [=]() { changeLanguage("fr"); });
-    languageMenu->addAction("German", [=]() { changeLanguage("de"); });
-
     connect(languageBtn, &QPushButton::clicked, this, &DashboardPage::showLanguageMenu);
+
+
 }
 
 QPushButton* DashboardPage::setCard(const QString& text, const QString& color) {
@@ -86,16 +85,65 @@ QPushButton* DashboardPage::setCard(const QString& text, const QString& color) {
 }
 
 void DashboardPage::showLanguageMenu() {
+    languageMenu = new QMenu(languageBtn);
+
+    languageMenu->addAction(tr("English"), [=]() { emit requestLanguageChange("en"); });
+    languageMenu->addAction(tr("French"), [=]() { emit requestLanguageChange("fr"); });
+    languageMenu->addAction(tr("German"), [=]() { emit requestLanguageChange("de"); });
+
     languageMenu->exec(languageBtn->mapToGlobal(QPoint(0, languageBtn->height())));
 }
 
-void DashboardPage::changeLanguage(const QString &languageCode) {
-    qApp->removeTranslator(&translator);
 
-    if (translator.load("translations_" + languageCode, ":/translations")) {
-        qApp->installTranslator(&translator);
-    }
 
-    // Refresh UI dynamically
-    setupDashboard();
+void DashboardPage::navigateToPollutantOverview() {
+    tabWidget->setCurrentIndex(2); // Navigate to "Pollutant Overview" tab
 }
+
+void DashboardPage::navigateToPOPsPage() {
+    tabWidget->setCurrentIndex(3); // Navigate to "POPs" tab
+}
+
+void DashboardPage::navigateToLitterIndicatorsPage() {
+    tabWidget->setCurrentIndex(4); // Navigate to "Litter Indicators" tab
+}
+
+void DashboardPage::navigateToFluorinatedCompoundsPage() {
+    tabWidget->setCurrentIndex(5); // Navigate to "Fluorinated Compounds" tab
+}
+
+void DashboardPage::navigateToCompliancePage() {
+    tabWidget->setCurrentIndex(6); // Navigate to "Compliance" tab
+}
+
+void DashboardPage::navigateToHotspotsPage() {
+    tabWidget->setCurrentIndex(7); // Navigate to "Geographical Hotspots" tab
+}
+
+void DashboardPage::retranslateUi() {
+    std::cout << "DashboardPage::retranslateUi() called" << std::endl;
+
+    // Update the title label
+    titleLabel->setText(tr("Water Quality Monitor"));
+
+    // Update buttons on the grid
+    pollutantBtn->setText(tr("Pollutant Overview"));
+    popsBtn->setText(tr("POPs"));
+    litterBtn->setText(tr("Litter Indicators"));
+    fluorinatedBtn->setText(tr("Fluorinated Compounds"));
+    complianceBtn->setText(tr("Compliance"));
+    hotspotBtn->setText(tr("Geographical Hotspots"));
+
+    // Update bottom buttons
+    linksBtn->setText(tr("Links"));
+    languageBtn->setText(tr("Language"));
+
+    // Clear and rebuild the language menu (if needed)
+    if (languageMenu) {
+        languageMenu->clear();
+        languageMenu->addAction(tr("English"), [=]() { emit requestLanguageChange("en"); });
+        languageMenu->addAction(tr("French"), [=]() { emit requestLanguageChange("fr"); });
+        languageMenu->addAction(tr("German"), [=]() { emit requestLanguageChange("de"); });
+    }
+}
+

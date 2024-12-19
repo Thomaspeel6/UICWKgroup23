@@ -1,7 +1,10 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QProgressBar>
+#include <QTimer>
 #include "model.hpp"
+#include "ComplianceDashboardPage.hpp"
 
 class QString;
 class QComboBox;
@@ -17,30 +20,48 @@ class waterQualityWindow: public QMainWindow
 public:
     waterQualityWindow();
 
+    void changeLanguage(const QString& languageCode);
+
+
+private slots:
+    void uploadRealData();
+    void uploadComplianceData();
+    void startProgressBar(const QString& message);
+    void updateProgressBar(QTimer* timer, const QString& successMessage);
+
+    void displayStats();
+    void onLanguageChanged();
+    void about();
+    
 private:
     void createMainWidget();
     //void createFileSelectors();
-    void createButtons();
-    void createToolBar();
     void createStatusBar();
     void addFileMenu();
     void addHelpMenu();
+    void retranslateUi();
 
     waterQualityModel model;
+    QCheckBox* complianceCheckBox;
     QString dataLocation;
     QComboBox* pollutantType;
     QComboBox* location;
     QComboBox* timeRange;
     QPushButton* loadButton;
     QPushButton* statsButton;
+    QPushButton* uploadComplianceDataButton;
+    ComplianceDashboardPage* compliancePage;
     QTableView* table;
-    QLabel* fileInfo;
+    QLabel* fileInfoLabel;
+    QLabel * complianceLabel;
     QTabWidget* tabWidget;
     StatsDialog* statsDialog;
+    QProgressBar* progressBar;
+    QTranslator translator;
 
-private slots:
-    void setDataLocation();
-    void openCSV();
-    void displayStats();
-    void about();
+
+signals:
+    void languageChanged(); // Add the languageChanged signal
+
+
 };

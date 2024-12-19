@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QMenu>
 #include <QTranslator>
+#include <QTabWidget>
+#include <QLabel>
 
 class DashboardPage : public QWidget
 {
@@ -14,10 +16,15 @@ class DashboardPage : public QWidget
 public:
     explicit DashboardPage(QTabWidget* tabWidget, QWidget* parent = nullptr);
 
+
+public slots: 
+    void retranslateUi();
+
 private:
     QPushButton* setCard(const QString& text, const QString& color);
     void setupDashboard();
 
+    QLabel* titleLabel;
     QPushButton *pollutantBtn;
     QPushButton *popsBtn;
     QPushButton *litterBtn;
@@ -32,6 +39,7 @@ private:
     QTranslator translator;
 
 private slots:
+
     void navigateToPollutantOverview();
     void navigateToPOPsPage();
     void navigateToLitterIndicatorsPage();
@@ -40,7 +48,10 @@ private slots:
     void navigateToHotspotsPage();
 
     void showLanguageMenu();
-    void changeLanguage(const QString &languageCode);
+
+signals:
+    void requestLanguageChange(const QString& languageCode);
+
 };
 
-#endif
+#endif // DASHBOARD_PAGE_HPP

@@ -127,8 +127,8 @@ void ComplianceDashboardPage::onApplyFilters() {
         QString pollutant = QString::fromStdString(record.getDeterminandLabel());
         double result = QString::fromStdString(record.getResult()).toDouble();
 
-        if ((selectedLocation == "All Locations" || location == selectedLocation) &&
-            (selectedPollutant == "All Pollutants" || pollutant == selectedPollutant)) {
+        if ((selectedLocation == tr("All Locations") || location == selectedLocation) &&
+            (selectedPollutant == tr("All Pollutants") || pollutant == selectedPollutant)) {
 
             if (complianceThresholds.contains(pollutant)) {
                 double threshold = complianceThresholds[pollutant];
@@ -142,7 +142,7 @@ void ComplianceDashboardPage::onApplyFilters() {
                     complianceStatus = tr("Non-Compliant");
                 }
 
-                if (selectedComplianceStatus == "All Compliance" || complianceStatus == selectedComplianceStatus) {
+                if (selectedComplianceStatus == tr("All Compliance") || complianceStatus == selectedComplianceStatus) {
                     QMap<QString, QVariant> recordMap;
                     recordMap["location"] = location;
                     recordMap["pollutant"] = pollutant;
@@ -184,8 +184,8 @@ void ComplianceDashboardPage::updatePagination() {
         QLabel* statusLabel = new QLabel(QString(tr("Status: %1")).arg(record["status"].toString()), this);
 
         // setting card background color for ease of compliance undesrtanding
-        QString color = record["status"] == "Compliant" ? "green" :
-                        record["status"] == "Near Compliance" ? "orange" : "red";
+        QString color = record["status"] == tr("Compliant") ? "green" :
+                        record["status"] == tr("Near Compliance") ? "orange" : "red";
         card->setStyleSheet(QString("background-color: %1; border-radius: 5px; padding: 10px;").arg(color));
 
  
@@ -224,4 +224,26 @@ void ComplianceDashboardPage::onPreviousPage() {
         --currentPage;
         updatePagination();
     }
+}
+
+void ComplianceDashboardPage::retranslateUi() {
+
+    std::cout << "ComplianceDashboardPage::retranslateUi() called" << std::endl;
+
+
+    // Update the text of filter dropdowns
+    locationFilter->setItemText(0, tr("All Locations"));
+    pollutantFilter->setItemText(0, tr("All Pollutants"));
+    complianceStatusFilter->setItemText(0, tr("All Compliance"));
+    complianceStatusFilter->setItemText(1, tr("Compliant"));
+    complianceStatusFilter->setItemText(2, tr("Non-Compliant"));
+    complianceStatusFilter->setItemText(3, tr("Near Compliance"));
+
+    // Update the text of buttons
+    applyFilterButton->setText(tr("Apply Filters"));
+    previousPageButton->setText(tr("Previous"));
+    nextPageButton->setText(tr("Next"));
+
+    // Update existing cards in the grid layout
+    updatePagination();
 }
