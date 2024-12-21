@@ -1,0 +1,5 @@
+/home/mikedd/comp2811/3/Iteration32/build/CMakeFiles/waterquality.dir
+/home/mikedd/comp2811/3/Iteration32/build/CMakeFiles/edit_cache.dir
+/home/mikedd/comp2811/3/Iteration32/build/CMakeFiles/rebuild_cache.dir
+/home/mikedd/comp2811/3/Iteration32/build/CMakeFiles/waterquality_autogen_timestamp_deps.dir
+/home/mikedd/comp2811/3/Iteration32/build/CMakeFiles/waterquality_autogen.dir
