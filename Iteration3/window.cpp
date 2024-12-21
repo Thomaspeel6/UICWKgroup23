@@ -241,12 +241,16 @@ void waterQualityWindow::about()
       tr("a CSV file."));
 }
 
-void waterQualityWindow::createButtons()
-{
-    // Intentionally left empty
+void waterQualityWindow::createButtons() {
+    statsButton = new QPushButton("Statistics");
+
+    connect(statsButton, SIGNAL(clicked()), this, SLOT(displayStats()));
 }
 
-void waterQualityWindow::createToolBar()
-{
-    // Intentionally left empty
+void waterQualityWindow::createToolBar() {
+    QToolBar* toolBar = new QToolBar();
+
+    toolBar->addWidget(statsButton);
+
+    addToolBar(Qt::TopToolBarArea, toolBar);
 }
