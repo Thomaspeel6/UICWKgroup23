@@ -1,0 +1,5 @@
+C:/Users/incre/OneDrive/Desktop/Iteration3/cmake-build-debug/CMakeFiles/waterquality.dir
+C:/Users/incre/OneDrive/Desktop/Iteration3/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/incre/OneDrive/Desktop/Iteration3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/incre/OneDrive/Desktop/Iteration3/cmake-build-debug/CMakeFiles/waterquality_autogen_timestamp_deps.dir
+C:/Users/incre/OneDrive/Desktop/Iteration3/cmake-build-debug/CMakeFiles/waterquality_autogen.dir
