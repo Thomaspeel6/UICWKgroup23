@@ -7,7 +7,6 @@
 #include "stats.hpp"
 #include "PollutantOverviewPage.hpp"
 #include "POPsPage.hpp"
-#include "EnvironmentalLitterIndicatorsPage.hpp"
 #include "FluorinatedCompoundsPage.hpp"
 #include "ComplianceDashboardPage.hpp"
 #include "DashboardPage.hpp"
@@ -47,7 +46,6 @@ void waterQualityWindow::createMainWidget()
     RawData* rawData = new RawData(&model, this);
     PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(this);
     POPsPage* popsPage = new POPsPage(tabWidget, this);
-    EnvironmentalLitterIndicatorsPage* litterPage = new EnvironmentalLitterIndicatorsPage();
     fluorinatedPage = new FluorinatedCompoundsPage(&model, this);
     compliancePage = new ComplianceDashboardPage(&model, this);
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
@@ -57,7 +55,6 @@ void waterQualityWindow::createMainWidget()
     tabWidget->addTab(dashboardPage, tr("Dashboard"));
     tabWidget->addTab(pollutantOverviewPage, tr("Pollutant Overview"));
     tabWidget->addTab(popsPage, tr("POPs"));
-    tabWidget->addTab(litterPage, tr("Environmental Litter Indicators"));
     tabWidget->addTab(fluorinatedPage, tr("Fluorinated Compounds"));
     tabWidget->addTab(compliancePage, tr("Compliance Dashboard"));
 
@@ -82,8 +79,8 @@ void waterQualityWindow::createStatusBar()
 
     // compliance data checkbox
     complianceCheckBox = new QCheckBox(this);
-    complianceCheckBox->setEnabled(false); 
-    complianceCheckBox->setChecked(false); 
+    complianceCheckBox->setEnabled(false);
+    complianceCheckBox->setChecked(false);
     status->addWidget(complianceCheckBox);
 
     // progress bar
@@ -149,11 +146,11 @@ void waterQualityWindow::updateProgressBar(QTimer* timer, const QString& success
         if (progressValue >= 99) {
             timer->stop();
             progressBar->setVisible(false);
-            statusBar()->showMessage(successMessage, 5000); 
+            statusBar()->showMessage(successMessage, 5000);
         }
     });
 
-    timer->start(400); 
+    timer->start(400);
 }
 
 void waterQualityWindow::uploadRealData()
@@ -168,10 +165,9 @@ void waterQualityWindow::uploadRealData()
     }
 
     try {
-        
+
         startProgressBar(tr("Loading data..."));
 
- 
         model.updateFromFile(filePath);
 
         QFileInfo fileInfo(filePath);
@@ -179,7 +175,7 @@ void waterQualityWindow::uploadRealData()
 
         fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(fileName));
 
-    
+
         QTimer* timer = new QTimer(this);
         updateProgressBar(timer, tr("Data loaded successfully!"));
 
