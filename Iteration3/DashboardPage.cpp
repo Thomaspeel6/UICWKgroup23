@@ -7,7 +7,6 @@
 #include <QMenu>
 #include <iostream>
 
-
 DashboardPage::DashboardPage(QTabWidget* tabWidget, QWidget* parent)
     : QWidget(parent), tabWidget(tabWidget)
 {
@@ -27,23 +26,18 @@ void DashboardPage::setupDashboard() {
 
     pollutantBtn = setCard(tr("Pollutant Overview"), "red");
     popsBtn = setCard(tr("POPs"), "orange");
-    litterBtn = setCard(tr("Litter Indicators"), "green");
     fluorinatedBtn = setCard(tr("Fluorinated Compounds"), "orange");
     complianceBtn = setCard(tr("Compliance"), "green");
-    hotspotBtn = setCard(tr("Geographical Hotspots"), "green");
 
     gridLayout->addWidget(pollutantBtn, 0, 0);
     gridLayout->addWidget(popsBtn, 0, 1);
-    gridLayout->addWidget(litterBtn, 0, 2);
     gridLayout->addWidget(fluorinatedBtn, 1, 0);
     gridLayout->addWidget(complianceBtn, 1, 1);
-    gridLayout->addWidget(hotspotBtn, 1, 2);
 
     mainLayout->addLayout(gridLayout);
 
     connect(pollutantBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPollutantOverview);
     connect(popsBtn, &QPushButton::clicked, this, &DashboardPage::navigateToPOPsPage);
-    connect(litterBtn, &QPushButton::clicked, this, &DashboardPage::navigateToLitterIndicatorsPage);
     connect(fluorinatedBtn, &QPushButton::clicked, this, &DashboardPage::navigateToFluorinatedCompoundsPage);
     connect(complianceBtn, &QPushButton::clicked, this, &DashboardPage::navigateToCompliancePage);
 
@@ -63,8 +57,6 @@ void DashboardPage::setupDashboard() {
     mainLayout->addLayout(bottomLayout);
 
     connect(languageBtn, &QPushButton::clicked, this, &DashboardPage::showLanguageMenu);
-
-
 }
 
 QPushButton* DashboardPage::setCard(const QString& text, const QString& color) {
@@ -94,8 +86,6 @@ void DashboardPage::showLanguageMenu() {
     languageMenu->exec(languageBtn->mapToGlobal(QPoint(0, languageBtn->height())));
 }
 
-
-
 void DashboardPage::navigateToPollutantOverview() {
     tabWidget->setCurrentIndex(2); // Navigate to "Pollutant Overview" tab
 }
@@ -104,20 +94,12 @@ void DashboardPage::navigateToPOPsPage() {
     tabWidget->setCurrentIndex(3); // Navigate to "POPs" tab
 }
 
-void DashboardPage::navigateToLitterIndicatorsPage() {
-    tabWidget->setCurrentIndex(4); // Navigate to "Litter Indicators" tab
-}
-
 void DashboardPage::navigateToFluorinatedCompoundsPage() {
-    tabWidget->setCurrentIndex(5); // Navigate to "Fluorinated Compounds" tab
+    tabWidget->setCurrentIndex(4); // Navigate to "Fluorinated Compounds" tab
 }
 
 void DashboardPage::navigateToCompliancePage() {
-    tabWidget->setCurrentIndex(6); // Navigate to "Compliance" tab
-}
-
-void DashboardPage::navigateToHotspotsPage() {
-    tabWidget->setCurrentIndex(7); // Navigate to "Geographical Hotspots" tab
+    tabWidget->setCurrentIndex(5); // Navigate to "Compliance" tab
 }
 
 void DashboardPage::retranslateUi() {
@@ -129,10 +111,8 @@ void DashboardPage::retranslateUi() {
     // Update buttons on the grid
     pollutantBtn->setText(tr("Pollutant Overview"));
     popsBtn->setText(tr("POPs"));
-    litterBtn->setText(tr("Litter Indicators"));
     fluorinatedBtn->setText(tr("Fluorinated Compounds"));
     complianceBtn->setText(tr("Compliance"));
-    hotspotBtn->setText(tr("Geographical Hotspots"));
 
     // Update bottom buttons
     linksBtn->setText(tr("Links"));
@@ -146,4 +126,3 @@ void DashboardPage::retranslateUi() {
         languageMenu->addAction(tr("German"), [=]() { emit requestLanguageChange("de"); });
     }
 }
-
