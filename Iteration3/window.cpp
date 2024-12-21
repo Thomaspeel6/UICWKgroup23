@@ -48,7 +48,7 @@ void waterQualityWindow::createMainWidget()
     PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(this);
     POPsPage* popsPage = new POPsPage(tabWidget, this);
     EnvironmentalLitterIndicatorsPage* litterPage = new EnvironmentalLitterIndicatorsPage();
-    FluorinatedCompoundsPage* fluorinatedPage = new FluorinatedCompoundsPage(this);
+    fluorinatedPage = new FluorinatedCompoundsPage(&model, this);
     compliancePage = new ComplianceDashboardPage(&model, this);
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
 
@@ -204,6 +204,7 @@ void waterQualityWindow::uploadComplianceData() {
     try {
         startProgressBar(tr("Loading compliance data..."));
         compliancePage->loadComplianceThresholds(filePath);
+        fluorinatedPage->loadFluorinatedThresholds(filePath);
 
 
 
