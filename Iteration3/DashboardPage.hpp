@@ -17,8 +17,8 @@ public:
     explicit DashboardPage(QTabWidget* tabWidget, QWidget* parent = nullptr);
 
 
-public slots: 
-    void retranslateUi();
+    public slots:
+        void retranslateUi();
 
 private:
     QPushButton* setCard(const QString& text, const QString& color);
@@ -27,10 +27,8 @@ private:
     QLabel* titleLabel;
     QPushButton *pollutantBtn;
     QPushButton *popsBtn;
-    QPushButton *litterBtn;
     QPushButton *fluorinatedBtn;
     QPushButton *complianceBtn;
-    QPushButton *hotspotBtn;
     QPushButton *linksBtn;
     QPushButton *languageBtn;
     QTabWidget* tabWidget;
@@ -38,19 +36,17 @@ private:
     QMenu *languageMenu;
     QTranslator translator;
 
-private slots:
+    private slots:
 
-    void navigateToPollutantOverview();
+        void navigateToPollutantOverview();
     void navigateToPOPsPage();
-    void navigateToLitterIndicatorsPage();
     void navigateToFluorinatedCompoundsPage();
     void navigateToCompliancePage();
-    void navigateToHotspotsPage();
 
     void showLanguageMenu();
 
-signals:
-    void requestLanguageChange(const QString& languageCode);
+    signals:
+        void requestLanguageChange(const QString& languageCode);
 
 };
 
