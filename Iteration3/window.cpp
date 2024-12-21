@@ -236,8 +236,17 @@ void waterQualityWindow::displayStats()
 
 void waterQualityWindow::about()
 {
-  QMessageBox::about(this, tr("About Water Quality Tool"),
-    tr("Water Quality Tool displays and analyzes Water Quality loaded from")
-    tr("a CSV file"));
+    QMessageBox::about(this, tr("About Water Quality Tool"),
+      tr("Water Quality Tool displays and analyzes Water Quality loaded from ") +
+      tr("a CSV file."));
 }
 
+void waterQualityWindow::createButtons()
+{
+    // Intentionally left empty
+}
+
+void waterQualityWindow::createToolBar()
+{
+    // Intentionally left empty
+}
