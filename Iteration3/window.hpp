@@ -5,6 +5,7 @@
 #include <QTimer>
 #include "model.hpp"
 #include "ComplianceDashboardPage.hpp"
+#include "FluorinatedCompoundsPage.hpp"
 
 class QString;
 class QComboBox;
@@ -39,6 +40,7 @@ private:
     QPushButton* statsButton;
     QPushButton* uploadComplianceDataButton;
     ComplianceDashboardPage* compliancePage;
+    FluorinatedCompoundsPage* fluorinatedPage;
     QTableView* table;
     QLabel* fileInfoLabel;
     QTabWidget* tabWidget;
