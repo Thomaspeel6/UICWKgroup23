@@ -39,7 +39,6 @@ void waterQualityWindow::createMainWidget()
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     table->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-
     RawData* rawData = new RawData(&model, this);
     PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(&model, this);
     POPsPage* popsPage = new POPsPage(tabWidget, this);
@@ -47,21 +46,17 @@ void waterQualityWindow::createMainWidget()
     compliancePage = new ComplianceDashboardPage(&model, this);
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
 
-
+    // Connect language change signals
     connect(this, &waterQualityWindow::languageChanged, dashboardPage, &DashboardPage::retranslateUi);
-    //connect(this, &waterQualityWindow::languageChanged, rawData, &RawData::retranslateUi);
-    //connect(this, &waterQualityWindow::languageChanged, pollutantOverviewPage, &PollutantOverviewPage::retranslateUi);
-    //connect(this, &waterQualityWindow::languageChanged, popsPage, &POPsPage::retranslateUi);
-    //connect(this, &waterQualityWindow::languageChanged, litterPage, &EnvironmentalLitterIndicatorsPage::retranslateUi);
-    //connect(this, &waterQualityWindow::languageChanged, fluorinatedPage, &FluorinatedCompoundsPage::retranslateUi);
+    connect(this, &waterQualityWindow::languageChanged, pollutantOverviewPage, &PollutantOverviewPage::retranslateUi);
+    connect(this, &waterQualityWindow::languageChanged, fluorinatedPage, &FluorinatedCompoundsPage::retranslateUi);
     connect(this, &waterQualityWindow::languageChanged, compliancePage, &ComplianceDashboardPage::retranslateUi);
     connect(this, &waterQualityWindow::languageChanged, this, &waterQualityWindow::retranslateUi);
 
-
-    // connection to dahsbaord button for chnage langauge
+    // Connect dashboard request for language change
     connect(dashboardPage, &DashboardPage::requestLanguageChange, this, &waterQualityWindow::changeLanguage);
 
-    //tabs to the tab widget
+    // Add tabs in the correct order
     tabWidget->addTab(rawData, tr("Raw Data"));
     tabWidget->addTab(dashboardPage, tr("Dashboard"));
     tabWidget->addTab(pollutantOverviewPage, tr("Pollutant Overview"));
@@ -69,12 +64,11 @@ void waterQualityWindow::createMainWidget()
     tabWidget->addTab(fluorinatedPage, tr("Fluorinated Compounds"));
     tabWidget->addTab(compliancePage, tr("Compliance Dashboard"));
 
+    // Ensure the first active tab is the dashboard
     tabWidget->setCurrentIndex(1);
 
     setCentralWidget(tabWidget);
 }
-
-
 void waterQualityWindow::createStatusBar()
 {
     // create the status bar
@@ -252,7 +246,6 @@ void waterQualityWindow::onLanguageChanged() {
 }
 
 void waterQualityWindow::retranslateUi() {
-
     std::cout << "waterQualityWindow::retranslateUi() called" << std::endl;
 
     // Update main window title
@@ -263,9 +256,8 @@ void waterQualityWindow::retranslateUi() {
     tabWidget->setTabText(1, tr("Dashboard"));
     tabWidget->setTabText(2, tr("Pollutant Overview"));
     tabWidget->setTabText(3, tr("POPs"));
-    tabWidget->setTabText(4, tr("Environmental Litter Indicators"));
-    tabWidget->setTabText(5, tr("Fluorinated Compounds"));
-    tabWidget->setTabText(6, tr("Compliance Dashboard"));
+    tabWidget->setTabText(4, tr("Fluorinated Compounds")); // Correct tab 4
+    tabWidget->setTabText(5, tr("Compliance Dashboard")); // Correct tab 5
 
     // Update status bar
     fileInfoLabel->setText(tr("Current File: <none>"));
@@ -280,5 +272,4 @@ void waterQualityWindow::retranslateUi() {
     menuBar()->clear(); // Rebuild menus to reflect translations
     addFileMenu();
     addHelpMenu();
-
 }
