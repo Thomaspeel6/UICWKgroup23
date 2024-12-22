@@ -2,28 +2,54 @@
 
 #include <QWidget>
 #include <QtCharts>
+#include "model.hpp"
 
-QT_BEGIN_NAMESPACE
 class QComboBox;
 class QPushButton;
-QT_END_NAMESPACE
+class QListWidget;
+class QChartView;
+
+struct ProcessedPollutantData {
+    QString dateTime;
+    double result;
+    QString samplingPoint;
+    QString materialType;
+    QString purpose;
+    int easting;
+    int northing;
+    bool isCompliance;
+    QString unit;
+};
 
 class PollutantOverviewPage : public QWidget
 {
     Q_OBJECT
 
 public:
-    PollutantOverviewPage(QWidget *parent = nullptr);
+    explicit PollutantOverviewPage(waterQualityModel* model, QWidget *parent = nullptr);
 
-signals:
-    void returnToDashboard();
+    public slots:
+        void handleDataUpdate(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles = QList<int>());
+    void retranslateUi();
 
 private:
     void setupUI();
-    void setupChart();
+    void setupChart(const QString& pollutantName = QString());
+    void connectSignals();
+    void updateSamplePoints(const QString& pollutantName);
 
-    // UI Elements
+    QStringList getAllPollutants() const;
+    QStringList getSamplePoints(const QString& pollutantName) const;
+    void updateLists();
+    QVector<ProcessedPollutantData> processData(const QString& pollutantName, const QStringList& selectedSamplePoints);
+    void handleChartPointClick(QScatterSeries* series, const QPointF& point);
+
     QComboBox* searchCombo;
+    QListWidget* samplePointList;
     QPushButton* searchButton;
     QChartView* chartView;
+
+    waterQualityModel* model;
+    QHash<QString, QVector<ProcessedPollutantData>> dataCache;
+    QString tooltipFormat;
 };
