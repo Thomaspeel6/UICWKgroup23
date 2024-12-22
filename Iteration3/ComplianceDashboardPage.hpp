@@ -28,6 +28,7 @@ private:
     QPushButton* applyFilterButton;
     QPushButton* nextPageButton;
     QPushButton* previousPageButton;
+    QPushButton* infoButton;
     QScrollArea* scrollArea;
     QWidget* cardContainer;
     QGridLayout* gridLayout;
@@ -44,8 +45,11 @@ private:
     void populateFilters();
     void applyFilters();
     void updatePagination();
+
 private slots:
     void onApplyFilters();
     void onNextPage();
     void onPreviousPage(); 
+    void showInfoDialog();
+    
 };

@@ -8,7 +8,6 @@
 #include <QScrollArea>
 
 
-
 ComplianceDashboardPage::ComplianceDashboardPage(waterQualityModel* model, QWidget* parent)
     : QWidget(parent), model(model), currentPage(0)
 {
@@ -17,17 +16,40 @@ ComplianceDashboardPage::ComplianceDashboardPage(waterQualityModel* model, QWidg
     pollutantFilter = new QComboBox(this);
     complianceStatusFilter = new QComboBox(this);
     applyFilterButton = new QPushButton(tr("Apply Filters"), this);
-    
-    // buttons layout 
+
+    // buttons layout
     QHBoxLayout* buttonLayout = new QHBoxLayout();
+    
     previousPageButton = new QPushButton(tr("Previous"), this);
     nextPageButton = new QPushButton(tr("Next"), this);
 
+
+
     buttonLayout->addWidget(previousPageButton);
     buttonLayout->addWidget(nextPageButton);
-
     buttonLayout->setAlignment(Qt::AlignCenter);
 
+
+    QHBoxLayout* topLayout = new QHBoxLayout();
+    QPushButton* infoButton = new QPushButton("ℹ️", this);
+    infoButton->setFixedSize(30, 30);
+    infoButton->setToolTip(tr("Click to learn more about the compliance dashboard"));
+    infoButton->setStyleSheet("border: black; background-color: white; font-size: 16px;");
+ 
+
+    QLabel* titleLabel = new QLabel(tr("Compliance Dashboard"), this);
+    titleLabel->setStyleSheet("font-size: 18px; font-weight: bold;");
+
+    topLayout->addStretch();
+    topLayout->addWidget(titleLabel);
+    topLayout->addStretch(); 
+    topLayout->addWidget(infoButton);
+    topLayout->setAlignment(Qt::AlignVCenter);
+
+    // wrapiing topLayout into a QWidget
+    QWidget* topWidget = new QWidget(this);
+    topWidget->setLayout(topLayout);
+    
     // card layouts
     scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
@@ -36,8 +58,10 @@ ComplianceDashboardPage::ComplianceDashboardPage(waterQualityModel* model, QWidg
 
     scrollArea->setWidget(cardContainer);
 
-    // setting the main layout
+
+    // main layout
     QVBoxLayout* layout = new QVBoxLayout();
+    layout->addWidget(topWidget);
     layout->addWidget(locationFilter);
     layout->addWidget(pollutantFilter);
     layout->addWidget(complianceStatusFilter);
@@ -47,13 +71,13 @@ ComplianceDashboardPage::ComplianceDashboardPage(waterQualityModel* model, QWidg
 
     setLayout(layout);
 
-
-
-    // connecting the buttons to slots
+    // connetcint the buttons to slots
     connect(applyFilterButton, &QPushButton::clicked, this, &ComplianceDashboardPage::onApplyFilters);
     connect(nextPageButton, &QPushButton::clicked, this, &ComplianceDashboardPage::onNextPage);
     connect(previousPageButton, &QPushButton::clicked, this, &ComplianceDashboardPage::onPreviousPage);
+    connect(infoButton, &QPushButton::clicked, this, &ComplianceDashboardPage::showInfoDialog);
 }
+
 
 // loaidng compliance thresholds
 void ComplianceDashboardPage::loadComplianceThresholds(const QString& filePath) {
@@ -230,6 +254,16 @@ void ComplianceDashboardPage::onPreviousPage() {
     }
 }
 
+void ComplianceDashboardPage::showInfoDialog() {
+    QMessageBox::information(this, tr("Copmliance Dashboard Information"), 
+                              tr("This dashboard allows you to filter and view compliance data "
+                                 "for various locations and pollutants. "
+                                 "Use the filters above to customize your view."
+                                 "The cards are color-coded based on compliance status: "
+                                 "Green for Compliant, Orange for Near Compliance (Within 5% of the compliance threshold), and Red for Non-Compliant."));
+}
+
+
 void ComplianceDashboardPage::retranslateUi() {
 
     std::cout << "ComplianceDashboardPage::retranslateUi() called" << std::endl;
@@ -242,6 +276,7 @@ void ComplianceDashboardPage::retranslateUi() {
     complianceStatusFilter->setItemText(1, tr("Compliant"));
     complianceStatusFilter->setItemText(2, tr("Non-Compliant"));
     complianceStatusFilter->setItemText(3, tr("Near Compliance"));
+
 
     // Update the text of buttons
     applyFilterButton->setText(tr("Apply Filters"));
