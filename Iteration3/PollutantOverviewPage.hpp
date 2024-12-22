@@ -28,8 +28,8 @@ class PollutantOverviewPage : public QWidget
 public:
     explicit PollutantOverviewPage(waterQualityModel* model, QWidget *parent = nullptr);
 
-public slots:
-    void handleDataUpdate(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles = QList<int>());
+    public slots:
+        void handleDataUpdate(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles = QList<int>());
     void retranslateUi();
 
 private:
@@ -37,7 +37,7 @@ private:
     void setupChart(const QString& pollutantName = QString());
     void connectSignals();
     void updateSamplePoints(const QString& pollutantName);
-    
+
     QStringList getAllPollutants() const;
     QStringList getSamplePoints(const QString& pollutantName) const;
     void updateLists();
