@@ -5,6 +5,7 @@
 #include <QTimer>
 #include "model.hpp"
 #include "ComplianceDashboardPage.hpp"
+#include "FluorinatedCompoundsPage.hpp"
 
 class QString;
 class QComboBox;
@@ -19,12 +20,12 @@ class waterQualityWindow: public QMainWindow
 
 public:
     waterQualityWindow();
+    void changeLanguage(const QString& languageCode);
 
 private:
     void createMainWidget();
-    //void createFileSelectors();
-    void createButtons();
-    void createToolBar();
+    void retranslateUi();
+
     void createStatusBar();
     void addFileMenu();
     void addHelpMenu();
@@ -39,18 +40,23 @@ private:
     QPushButton* statsButton;
     QPushButton* uploadComplianceDataButton;
     ComplianceDashboardPage* compliancePage;
+    FluorinatedCompoundsPage* fluorinatedPage;
     QTableView* table;
     QLabel* fileInfoLabel;
+    QLabel * complianceLabel;
     QTabWidget* tabWidget;
     StatsDialog* statsDialog;
     QProgressBar* progressBar;
+    QTranslator translator;
 
-private slots:
-    void uploadRealData();
+    private slots:
+        void uploadRealData();
     void uploadComplianceData();
     void startProgressBar(const QString& message);
     void updateProgressBar(QTimer* timer, const QString& successMessage);
 
-    void displayStats();
+    void onLanguageChanged();
     void about();
+    signals:
+        void languageChanged(); // change language signal
 };
