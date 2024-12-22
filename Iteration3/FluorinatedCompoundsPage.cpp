@@ -111,10 +111,10 @@ void FluorinatedCompoundsPage::populateFluorineFilters() {
     for (const auto& record : model->getDataset().getData()) {
         QString location = QString::fromStdString(record.getSamplingPointLabel());
         QString pollutant = QString::fromStdString(record.getDeterminandLabel());
-        QString definition = QString::fromStdString(record.getDeterminandDefinition()).trimmed(); // Use definition
+        QString definition = QString::fromStdString(record.getDeterminandDefinition()).trimmed(); 
 
         if (definition.contains("fluoro", Qt::CaseInsensitive)) {
-            pollutants.insert(pollutant);  // Add pollutant based on its definition
+            pollutants.insert(pollutant);  
         }
 
         locations.insert(location);
@@ -122,11 +122,13 @@ void FluorinatedCompoundsPage::populateFluorineFilters() {
 
     // Convert QSet to QStringList and sort alphabetically
     QStringList sortedLocations = locations.values();
-    sortedLocations.sort();  // Sort alphabetically
+    QStringList sortedPollutants = pollutants.values();
+    sortedLocations.sort();  // Sort locations alphabetically
+    sortedPollutants.sort(); // Sort pollutants alphabetically
 
-    // Add sorted locations to the location filter dropdown
+    // Add sorted items to the filters
     fluorineLocationFilter->addItems(sortedLocations);
-    fluorinePollutantFilter->addItems(pollutants.values());
+    fluorinePollutantFilter->addItems(sortedPollutants);
 }
 
 void FluorinatedCompoundsPage::onApplyFluorineFilters() {
