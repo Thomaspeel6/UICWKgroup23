@@ -1,35 +1,59 @@
 #pragma once
 
 #include <QWidget>
-#include <QtCharts>
+#include <QComboBox>
+#include <QPushButton>
+#include <QLabel>
+#include <QList>
+#include <QMap>
+#include <QVariant>
+#include <QScrollArea>
+#include <QGridLayout>
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
+#include <QtCharts/QCategoryAxis>
 #include "model.hpp"
 
-
-class QChartView;
-class QPushButton;
-class QComboBox;
-
-
-class FluorinatedCompoundsPage : public QWidget {
-
+class FluorinatedCompoundsPage : public QWidget
+{
+    Q_OBJECT
 
 public:
-    explicit FluorinatedCompoundsPage(QWidget* parent = nullptr);
+    explicit FluorinatedCompoundsPage(waterQualityModel* model, QWidget* parent = nullptr);
+
+    void loadFluorinatedThresholds(const QString& filePath);
+    void retranslateUi();
 
 private:
-    void setupUI();
-    void setupChart();
-    void connectSignals();
+    QComboBox* fluorineLocationFilter;
+    QComboBox* fluorinePollutantFilter;
+    QPushButton* applyFluorineFilterButton;
+    QScrollArea* fluorineScrollArea;
+    QWidget* fluorineCardContainer;
+    QGridLayout* fluorineGridLayout;
 
-    QChartView* chartView;
-    QComboBox* pollutantSelector;
-    QPushButton* backButton;
+    QLabel* pollutantLevelLabel;
+    QLabel* complianceIndicator;
+
     waterQualityModel* model;
+    QMap<QString, double> fluorineThresholds;
+    QVector<QPointF> fluorineFilteredData;
 
 
-signals:
-    void returnToDashboard();
+    QChart* fluorineChart = nullptr;
+    QLineSeries* fluorineSeries = nullptr;
+    QChartView* fluorineChartView = nullptr;
 
-public slots:
-    void updateChart(const QString& pollutantName);
+
+    QValueAxis* yAxis = nullptr;
+    QCategoryAxis* xAxis = nullptr;
+
+    void populateFluorineFilters();
+    void updateFluorineChart();
+    void showTooltip(const QPointF& point, bool state);
+
+    private slots:
+        void onApplyFluorineFilters();
 };
