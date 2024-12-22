@@ -13,26 +13,26 @@ PollutantOverviewPage::PollutantOverviewPage(waterQualityModel* modelPtr, QWidge
 
 void PollutantOverviewPage::setupUI()
 {
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(10);
-    mainLayout->setContentsMargins(10, 10, 10, 10);
+    QVBoxLayout* outerLayout = new QVBoxLayout(this);
+    outerLayout->setSpacing(5);
+    outerLayout->setContentsMargins(5, 5, 5, 5);
 
-    // search box
-    QGroupBox* searchGroup = new QGroupBox(tr("Search Controls"));
-    QVBoxLayout* searchGroupLayout = new QVBoxLayout();
-    searchGroupLayout->setSpacing(8);
-    searchGroupLayout->setContentsMargins(10, 10, 10, 10);
-    // Search section
-    QHBoxLayout* searchLayout = new QHBoxLayout();
-    searchLayout->addWidget(searchGroup, 1);
-    searchLayout->addStretch(0);
+    scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+    contentWidget = new QWidget();
+    QVBoxLayout* contentLayout = new QVBoxLayout(contentWidget);
+    contentLayout->setSpacing(8);
+    contentLayout->setContentsMargins(10, 10, 10, 10);
+    
     // Pollutant
     QLabel* pollutantLabel = new QLabel(tr("Select Pollutant:"));
     searchCombo = new QComboBox();
     searchCombo->setEditable(true);
     searchCombo->setPlaceholderText(tr("Search pollutants"));
-    searchCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    searchCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     searchCombo->addItems(getAllPollutants());
     searchCombo->setStyleSheet(
         "QComboBox {"
@@ -42,51 +42,27 @@ void PollutantOverviewPage::setupUI()
         "   font-size: 14px;"
         "}"
     );
-
+    
     // Sample Points List
     QLabel* samplePointLabel = new QLabel(tr("Select Sampling Points:"));
-    samplePointList = new QListWidget();
-    samplePointList->setSelectionMode(QAbstractItemView::MultiSelection);
-    samplePointList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    //samplePointList->setMinimumHeight(150);
-    //samplePointList->setMaximumHeight(200);
+    samplePointList = new QComboBox();
+    samplePointList->setEditable(false);
+    samplePointList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     samplePointList->setStyleSheet(
-    "QListWidget {"
-    "   border: 1px solid #ced4da;"
-    "   border-radius: 4px;"
-    "   padding: 5px;"
-    "   background-color: white;"
-    "   color: #212529;"
-    "}"
-    "QListWidget::item {"
-    "   padding: 5px;"
-    "   background-color: #f8f9fa;"
-    "   color: #212529;"
-    "}"
-    "QListWidget::item:hover {"
-    "   background-color: #e2e6ea;"
-    "}"
-    "QListWidget::item:selected {"
-    "   background-color: #adb5bd;"
-    "   color: #ffffff;"
-    "}"
-);
-
-    // Search Button
-    searchButton = new QPushButton(tr("Generate Chart"));
-    searchButton->setStyleSheet(
-        "QPushButton {"
-        "   background-color: #28a745;"
-        "   color: white;"
-        "   border: none;"
+        "QComboBox {"
+        "   padding: 8px;"
+        "   border: 1px solid rgb(193, 224, 254);"
         "   border-radius: 4px;"
-        "   padding: 8px 15px;"
+        "   font-size: 14px;"
         "}"
-        "QPushButton:hover {"
-        "   background-color: #218838;"
+        "QComboBox QAbstractItemView {"
+        "   border: 1px solid #ced4da;"
+        "   border-radius: 4px;"
+        "   background-color: white;"
+        "   selection-background-color: #e9ecef;"
         "}"
     );
-
+    
     // Search Button
     searchButton = new QPushButton(tr("Generate Chart"));
     searchButton->setStyleSheet(
@@ -103,34 +79,21 @@ void PollutantOverviewPage::setupUI()
         "}"
     );
 
-    // allocate position to search group
-    searchGroupLayout->addWidget(pollutantLabel);
-    searchGroupLayout->addWidget(searchCombo);
-    searchGroupLayout->addWidget(samplePointLabel);
-    searchGroupLayout->addWidget(samplePointList);
-    searchGroupLayout->addWidget(searchButton);
-    searchGroup->setStyleSheet(
-        "QGroupBox {"
-        "    margin-top: 1em;"
-        "    padding-top: 10px;"
-        "}"
-        "QGroupBox::title {"
-        "    subcontrol-origin: margin;"
-        "    left: 10px;"
-        "    padding: 0 3px;"
-        "}"
-    );
-    searchGroup->setLayout(searchGroupLayout);
-
-    // Add search group
-    searchGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    mainLayout->addLayout(searchLayout, 1);
+    // Add all widgets to layout
+    contentLayout->addWidget(pollutantLabel);
+    contentLayout->addWidget(searchCombo);
+    contentLayout->addWidget(samplePointLabel);
+    contentLayout->addWidget(samplePointList);
+    contentLayout->addWidget(searchButton);
 
     // Chart view
     chartView = new QChartView();
     chartView->setRenderHint(QPainter::Antialiasing);
-    //chartView->setMinimumHeight(400);
-    mainLayout->addWidget(chartView);
+    chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    contentLayout->addWidget(chartView);
+
+    scrollArea->setWidget(contentWidget);
+    outerLayout->addWidget(scrollArea);
 
     setupChart();
 }
@@ -138,13 +101,14 @@ void PollutantOverviewPage::setupUI()
 void PollutantOverviewPage::setupChart(const QString& pollutantName)
 {
     QChart* chart = new QChart();
-
+    
     if (!pollutantName.isEmpty()) {
         QStringList selectedSamplePoints;
-        for (QListWidgetItem* item : samplePointList->selectedItems()) {
-            selectedSamplePoints << item->text();
+        QString currentPoint = samplePointList->currentText();
+        if (!currentPoint.isEmpty()) {
+            selectedSamplePoints << currentPoint;
         }
-
+        
         if (selectedSamplePoints.isEmpty()) {
             chart->setTitle(tr("Pollutant Levels Over Time"));
             chartView->setChart(chart);
@@ -152,9 +116,9 @@ void PollutantOverviewPage::setupChart(const QString& pollutantName)
         }
 
         dataCache.remove(pollutantName);
-
+        
         dataCache[pollutantName] = processData(pollutantName, selectedSamplePoints);
-
+        
         const auto& data = dataCache[pollutantName];
 
         if (!data.isEmpty()) {
@@ -163,85 +127,85 @@ void PollutantOverviewPage::setupChart(const QString& pollutantName)
             double maxY = std::numeric_limits<double>::min();
             QDateTime minTime = QDateTime::fromString(data.first().dateTime, Qt::ISODate);
             QDateTime maxTime = minTime;
-
+            
             QHash<QString, QVector<ProcessedPollutantData>> grouped;
-
+            
             // calculate ranges
             for (const auto& point : data) {
                 if (selectedSamplePoints.contains(point.samplingPoint)) {
                     minY = std::min(minY, point.result);
                     maxY = std::max(maxY, point.result);
-
+                    
                     QDateTime dateTime = QDateTime::fromString(point.dateTime, Qt::ISODate);
                     minTime = qMin(minTime, dateTime);
                     maxTime = qMax(maxTime, dateTime);
-
+                    
                     grouped[point.samplingPoint].append(point);
                 }
             }
-
+            
             // Create series of sample points
             for (auto it = grouped.begin(); it != grouped.end(); ++it) {
                 QLineSeries* lineSeries = new QLineSeries();
                 QScatterSeries* scatterSeries = new QScatterSeries();
-
+                
                 lineSeries->setName(it.key());
                 scatterSeries->setName(it.key());
-
+                
                 for (const auto& point : it.value()) {
                     QDateTime dateTime = QDateTime::fromString(point.dateTime, Qt::ISODate);
                     qreal x = dateTime.toMSecsSinceEpoch();
                     qreal y = point.result;
-
+                    
                     lineSeries->append(x, y);
                     scatterSeries->append(x, y);
-
-                    QColor color = point.isCompliance ?
-                        (point.result > maxY * 0.7 ? QColor(255, 204, 0) : Qt::green) :
+                    
+                    QColor color = point.isCompliance ? 
+                        (point.result > maxY * 0.7 ? QColor(255, 204, 0) : Qt::green) : 
                         Qt::red;
-
+                    
                     lineSeries->setColor(color);
                     scatterSeries->setColor(color);
                 }
-
+                
                 scatterSeries->setMarkerSize(15);
                 connect(scatterSeries, &QScatterSeries::clicked, this,
                     [this, scatterSeries](const QPointF& point) {
                         handleChartPointClick(scatterSeries, point);
                     });
-
+                
                 chart->addSeries(lineSeries);
                 chart->addSeries(scatterSeries);
             }
-
+            
             // Setup axes
             QDateTimeAxis* axisX = new QDateTimeAxis();
             QValueAxis* axisY = new QValueAxis();
-
+            
             double yPadding = (maxY - minY) * 0.1;
             axisY->setRange(minY - yPadding, maxY + yPadding);
             axisX->setRange(minTime.addDays(-1), maxTime.addDays(1));
-
+            
             axisX->setFormat("yyyy-MM-dd");
             axisY->setLabelFormat("%.4f");
-
+            
             axisX->setTitleText(tr("Time"));
             axisY->setTitleText(tr("Pollutant level"));
-
+            
             chart->addAxis(axisX, Qt::AlignBottom);
             chart->addAxis(axisY, Qt::AlignLeft);
-
+            
             for (QAbstractSeries* series : chart->series()) {
                 series->attachAxis(axisX);
                 series->attachAxis(axisY);
             }
-
+            
             chart->setTitle(tr("Pollutant Levels Over Time: %1").arg(pollutantName));
         }
     } else {
         chart->setTitle(tr("Pollutant Levels Over Time"));
     }
-
+    
     chart->legend()->hide();
     chartView->setChart(chart);
 }
@@ -251,7 +215,7 @@ void PollutantOverviewPage::connectSignals()
     // Update sample points
     connect(searchCombo, QOverload<const QString &>::of(&QComboBox::currentTextChanged),
             this, &PollutantOverviewPage::updateSamplePoints);
-
+    
     // Filte pollutant
     connect(searchCombo, &QComboBox::editTextChanged, this, [this](const QString& text) {
         if (text.isEmpty()) {
@@ -259,14 +223,14 @@ void PollutantOverviewPage::connectSignals()
             searchCombo->addItems(getAllPollutants());
             return;
         }
-
+        
         QStringList filteredItems;
         for (const QString& pollutant : getAllPollutants()) {
             if (pollutant.contains(text, Qt::CaseInsensitive)) {
                 filteredItems << pollutant;
             }
         }
-
+        
         if (!filteredItems.isEmpty()) {
             QString currentText = searchCombo->currentText();
             searchCombo->blockSignals(true);
@@ -276,7 +240,7 @@ void PollutantOverviewPage::connectSignals()
             searchCombo->blockSignals(false);
         }
     });
-
+    
     // search button click
     connect(searchButton, &QPushButton::clicked, this, [this]() {
         QString pollutantName = searchCombo->currentText();
@@ -286,7 +250,7 @@ void PollutantOverviewPage::connectSignals()
     });
 }
 
-QStringList PollutantOverviewPage::getAllPollutants() const
+QStringList PollutantOverviewPage::getAllPollutants() const 
 {
     QSet<QString> pollutants;
     const auto& dataset = model->getDataset();
@@ -301,7 +265,7 @@ void PollutantOverviewPage::updateSamplePoints(const QString& pollutantName)
     samplePointList->clear();
     QStringList samplePoints = getSamplePoints(pollutantName);
     samplePointList->addItems(samplePoints);
-
+    
     dataCache.clear();
 }
 
@@ -322,15 +286,15 @@ QVector<ProcessedPollutantData> PollutantOverviewPage::processData(const QString
 {
     QVector<ProcessedPollutantData> data;
     const auto& dataset = model->getDataset();
-
+    
     for (size_t i = 0; i < dataset.getSize(); ++i) {
         const auto& row = dataset.getRow(i);
         // get point
         QString currentSamplePoint = QString::fromStdString(row.getSamplingPointLabel());
-
+        
         if (QString::fromStdString(row.getDeterminandLabel()) == pollutantName &&
             selectedSamplePoints.contains(currentSamplePoint)) {
-
+            
             ProcessedPollutantData point{
                 QString::fromStdString(row.getSampleDateTime()),
                 std::stod(row.getResult()),
@@ -345,10 +309,10 @@ QVector<ProcessedPollutantData> PollutantOverviewPage::processData(const QString
             data.append(point);
         }
     }
-
+    
     std::sort(data.begin(), data.end(),
         [](const auto& a, const auto& b) { return a.dateTime < b.dateTime; });
-
+    
     return data;
 }
 
@@ -356,14 +320,14 @@ void PollutantOverviewPage::handleChartPointClick(QScatterSeries* series, const 
 {
     QString pollutantName = searchCombo->currentText();
     if (!dataCache.contains(pollutantName)) return;
-
+    
     const auto& data = dataCache[pollutantName];
     QDateTime clickTime = QDateTime::fromMSecsSinceEpoch(point.x());
-
+    
     for (const auto& dataPoint : data) {
         if (dataPoint.samplingPoint == series->name() &&
             QDateTime::fromString(dataPoint.dateTime, Qt::ISODate).toMSecsSinceEpoch() == point.x()) {
-
+            
             QString tooltip = tooltipFormat
                 .arg(dataPoint.purpose)
                 .arg(dataPoint.materialType)
@@ -373,7 +337,7 @@ void PollutantOverviewPage::handleChartPointClick(QScatterSeries* series, const 
                 .arg(dataPoint.easting)
                 .arg(dataPoint.northing)
                 .arg(dataPoint.isCompliance ? tr("Yes") : tr("No"));
-
+            
             QToolTip::showText(QCursor::pos(), tooltip, chartView, QRect(), 5000);
             break;
         }
@@ -389,12 +353,6 @@ void PollutantOverviewPage::handleDataUpdate(const QModelIndex&, const QModelInd
 
 void PollutantOverviewPage::retranslateUi()
 {
-    // Update search box
-    QList<QGroupBox*> groupBoxes = findChildren<QGroupBox*>();
-    if (!groupBoxes.isEmpty()) {
-        groupBoxes[0]->setTitle(tr("Search Controls"));
-    }
-
     // Update labels
     QList<QLabel*> labels = findChildren<QLabel*>();
     for (QLabel* label : labels) {
@@ -407,7 +365,7 @@ void PollutantOverviewPage::retranslateUi()
 
     // Update combobox
     searchCombo->setPlaceholderText(tr("Search pollutants"));
-
+    
     // Update button
     searchButton->setText(tr("Generate Chart"));
 
@@ -445,7 +403,7 @@ void PollutantOverviewPage::updateLists()
     searchCombo->clear();
     searchCombo->addItems(getAllPollutants());
     samplePointList->clear();
-
+    
     // Update sample points location
     QString currentPollutant = searchCombo->currentText();
     if (!currentPollutant.isEmpty()) {

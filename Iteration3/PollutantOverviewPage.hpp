@@ -45,9 +45,12 @@ private:
     void handleChartPointClick(QScatterSeries* series, const QPointF& point);
 
     QComboBox* searchCombo;
-    QListWidget* samplePointList;
+    QComboBox* samplePointList;
     QPushButton* searchButton;
     QChartView* chartView;
+
+    QScrollArea* scrollArea;
+    QWidget* contentWidget;
 
     waterQualityModel* model;
     QHash<QString, QVector<ProcessedPollutantData>> dataCache;
