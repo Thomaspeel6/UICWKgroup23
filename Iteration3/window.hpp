@@ -48,15 +48,16 @@ private:
     StatsDialog* statsDialog;
     QProgressBar* progressBar;
     QTranslator translator;
+    QString currentFileName;
 
     private slots:
         void uploadRealData();
-    void uploadComplianceData();
-    void startProgressBar(const QString& message);
-    void updateProgressBar(QTimer* timer, const QString& successMessage);
+        void uploadComplianceData();
+        void startProgressBar(const QString& message);
+        void updateProgressBar(QTimer* timer, const QString& successMessage);
 
-    void onLanguageChanged();
-    void about();
+        void onLanguageChanged();
+        void about();
     signals:
         void languageChanged(); // change language signal
 };

@@ -176,9 +176,9 @@ void waterQualityWindow::uploadRealData()
         model.updateFromFile(filePath);
 
         QFileInfo fileInfo(filePath);
-        QString fileName = fileInfo.fileName();
+        currentFileName = fileInfo.fileName(); // Store the file name
 
-        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(fileName));
+        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(currentFileName));
 
 
         QTimer* timer = new QTimer(this);
@@ -260,7 +260,11 @@ void waterQualityWindow::retranslateUi() {
     tabWidget->setTabText(5, tr("Compliance Dashboard")); // Correct tab 5
 
     // Update status bar
-    fileInfoLabel->setText(tr("Current File: <none>"));
+    if (currentFileName.isEmpty()) {
+        fileInfoLabel->setText(tr("Current File: <none>")); 
+    } else {
+        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(currentFileName)); 
+    }
     if (complianceLabel) {
         complianceLabel->setText(tr("Compliance Data Uploaded:"));
     } else {
