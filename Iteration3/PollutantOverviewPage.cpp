@@ -276,10 +276,11 @@ void PollutantOverviewPage::updateSamplePoints(const QString& pollutantName)
     // Get all sample points for the selected pollutant
     QStringList samplePoints = getSamplePoints(pollutantName);
 
-    // Add "All Locations" option at the top of the list
+
+    samplePoints.sort(Qt::CaseInsensitive);
     samplePointList->addItem(tr("All Locations"));
 
-    // Add other sample points
+    // Add sorted sample points
     samplePointList->addItems(samplePoints);
 
     dataCache.clear(); // Clear the data cache to ensure fresh data is used
