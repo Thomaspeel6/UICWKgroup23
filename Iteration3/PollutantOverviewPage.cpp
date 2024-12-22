@@ -26,7 +26,7 @@ void PollutantOverviewPage::setupUI()
     QVBoxLayout* contentLayout = new QVBoxLayout(contentWidget);
     contentLayout->setSpacing(8);
     contentLayout->setContentsMargins(10, 10, 10, 10);
-    
+
     // Pollutant
     QLabel* pollutantLabel = new QLabel(tr("Select Pollutant:"));
     searchCombo = new QComboBox();
@@ -42,7 +42,7 @@ void PollutantOverviewPage::setupUI()
         "   font-size: 14px;"
         "}"
     );
-    
+
     // Sample Points List
     QLabel* samplePointLabel = new QLabel(tr("Select Sampling Points:"));
     samplePointList = new QComboBox();
@@ -69,7 +69,7 @@ void PollutantOverviewPage::setupUI()
     "   color: #ffffff;"
     "}"
     );
-    
+
     // Search Button
     searchButton = new QPushButton(tr("Generate Chart"));
     searchButton->setStyleSheet(
@@ -108,14 +108,20 @@ void PollutantOverviewPage::setupUI()
 void PollutantOverviewPage::setupChart(const QString& pollutantName)
 {
     QChart* chart = new QChart();
-    
+
     if (!pollutantName.isEmpty()) {
         QStringList selectedSamplePoints;
-        QString currentPoint = samplePointList->currentText();
-        if (!currentPoint.isEmpty()) {
-            selectedSamplePoints << currentPoint;
+
+        // Check if "All Locations" is selected
+        if (samplePointList->currentText() == tr("All Locations")) {
+            selectedSamplePoints = getSamplePoints(pollutantName); // Include all locations
+        } else {
+            QString currentPoint = samplePointList->currentText();
+            if (!currentPoint.isEmpty()) {
+                selectedSamplePoints << currentPoint; // Include the selected location
+            }
         }
-        
+
         if (selectedSamplePoints.isEmpty()) {
             chart->setTitle(tr("Pollutant Levels Over Time"));
             chartView->setChart(chart);
@@ -123,96 +129,92 @@ void PollutantOverviewPage::setupChart(const QString& pollutantName)
         }
 
         dataCache.remove(pollutantName);
-        
+
         dataCache[pollutantName] = processData(pollutantName, selectedSamplePoints);
-        
+
         const auto& data = dataCache[pollutantName];
 
         if (!data.isEmpty()) {
-            // record data ranges
             double minY = std::numeric_limits<double>::max();
             double maxY = std::numeric_limits<double>::min();
             QDateTime minTime = QDateTime::fromString(data.first().dateTime, Qt::ISODate);
             QDateTime maxTime = minTime;
-            
+
             QHash<QString, QVector<ProcessedPollutantData>> grouped;
-            
-            // calculate ranges
+
             for (const auto& point : data) {
                 if (selectedSamplePoints.contains(point.samplingPoint)) {
                     minY = std::min(minY, point.result);
                     maxY = std::max(maxY, point.result);
-                    
+
                     QDateTime dateTime = QDateTime::fromString(point.dateTime, Qt::ISODate);
                     minTime = qMin(minTime, dateTime);
                     maxTime = qMax(maxTime, dateTime);
-                    
+
                     grouped[point.samplingPoint].append(point);
                 }
             }
-            
-            // Create series of sample points
+
             for (auto it = grouped.begin(); it != grouped.end(); ++it) {
                 QLineSeries* lineSeries = new QLineSeries();
                 QScatterSeries* scatterSeries = new QScatterSeries();
-                
+
                 lineSeries->setName(it.key());
                 scatterSeries->setName(it.key());
-                
+
                 for (const auto& point : it.value()) {
                     QDateTime dateTime = QDateTime::fromString(point.dateTime, Qt::ISODate);
                     qreal x = dateTime.toMSecsSinceEpoch();
                     qreal y = point.result;
-                    
+
                     lineSeries->append(x, y);
                     scatterSeries->append(x, y);
-                    
-                    QColor color = point.isCompliance ? 
-                        (point.result > maxY * 0.7 ? QColor(255, 204, 0) : Qt::green) : 
+
+                    QColor color = point.isCompliance ?
+                        (point.result > maxY * 0.7 ? QColor(255, 204, 0) : Qt::green) :
                         Qt::red;
-                    
+
                     lineSeries->setColor(color);
                     scatterSeries->setColor(color);
                 }
-                
+
                 scatterSeries->setMarkerSize(15);
                 connect(scatterSeries, &QScatterSeries::clicked, this,
-                    [this, scatterSeries](const QPointF& point) {
-                        handleChartPointClick(scatterSeries, point);
-                    });
-                
+                        [this, scatterSeries](const QPointF& point) {
+                            handleChartPointClick(scatterSeries, point);
+                        });
+
                 chart->addSeries(lineSeries);
                 chart->addSeries(scatterSeries);
             }
-            
-            // Setup axes
+
             QDateTimeAxis* axisX = new QDateTimeAxis();
             QValueAxis* axisY = new QValueAxis();
-            
+
             double yPadding = (maxY - minY) * 0.1;
             axisY->setRange(minY - yPadding, maxY + yPadding);
             axisX->setRange(minTime.addDays(-1), maxTime.addDays(1));
-            
+
             axisX->setFormat("yyyy-MM-dd");
             axisY->setLabelFormat("%.4f");
-            
+
             axisX->setTitleText(tr("Time"));
             axisY->setTitleText(tr("Pollutant level"));
-            
+
             chart->addAxis(axisX, Qt::AlignBottom);
             chart->addAxis(axisY, Qt::AlignLeft);
-            
+
             for (QAbstractSeries* series : chart->series()) {
                 series->attachAxis(axisX);
                 series->attachAxis(axisY);
             }
-            
+
             chart->setTitle(tr("Pollutant Levels Over Time: %1").arg(pollutantName));
         }
     } else {
         chart->setTitle(tr("Pollutant Levels Over Time"));
     }
-    
+
     chart->legend()->hide();
     chartView->setChart(chart);
 }
@@ -222,7 +224,7 @@ void PollutantOverviewPage::connectSignals()
     // Update sample points
     connect(searchCombo, QOverload<const QString &>::of(&QComboBox::currentTextChanged),
             this, &PollutantOverviewPage::updateSamplePoints);
-    
+
     // Filte pollutant
     connect(searchCombo, &QComboBox::editTextChanged, this, [this](const QString& text) {
         if (text.isEmpty()) {
@@ -230,14 +232,14 @@ void PollutantOverviewPage::connectSignals()
             searchCombo->addItems(getAllPollutants());
             return;
         }
-        
+
         QStringList filteredItems;
         for (const QString& pollutant : getAllPollutants()) {
             if (pollutant.contains(text, Qt::CaseInsensitive)) {
                 filteredItems << pollutant;
             }
         }
-        
+
         if (!filteredItems.isEmpty()) {
             QString currentText = searchCombo->currentText();
             searchCombo->blockSignals(true);
@@ -247,7 +249,7 @@ void PollutantOverviewPage::connectSignals()
             searchCombo->blockSignals(false);
         }
     });
-    
+
     // search button click
     connect(searchButton, &QPushButton::clicked, this, [this]() {
         QString pollutantName = searchCombo->currentText();
@@ -257,7 +259,7 @@ void PollutantOverviewPage::connectSignals()
     });
 }
 
-QStringList PollutantOverviewPage::getAllPollutants() const 
+QStringList PollutantOverviewPage::getAllPollutants() const
 {
     QSet<QString> pollutants;
     const auto& dataset = model->getDataset();
@@ -269,11 +271,18 @@ QStringList PollutantOverviewPage::getAllPollutants() const
 
 void PollutantOverviewPage::updateSamplePoints(const QString& pollutantName)
 {
-    samplePointList->clear();
+    samplePointList->clear(); // Clear the current list
+
+    // Get all sample points for the selected pollutant
     QStringList samplePoints = getSamplePoints(pollutantName);
+
+    // Add "All Locations" option at the top of the list
+    samplePointList->addItem(tr("All Locations"));
+
+    // Add other sample points
     samplePointList->addItems(samplePoints);
-    
-    dataCache.clear();
+
+    dataCache.clear(); // Clear the data cache to ensure fresh data is used
 }
 
 QStringList PollutantOverviewPage::getSamplePoints(const QString& pollutantName) const
@@ -293,15 +302,14 @@ QVector<ProcessedPollutantData> PollutantOverviewPage::processData(const QString
 {
     QVector<ProcessedPollutantData> data;
     const auto& dataset = model->getDataset();
-    
+
     for (size_t i = 0; i < dataset.getSize(); ++i) {
         const auto& row = dataset.getRow(i);
-        // get point
         QString currentSamplePoint = QString::fromStdString(row.getSamplingPointLabel());
-        
+
         if (QString::fromStdString(row.getDeterminandLabel()) == pollutantName &&
             selectedSamplePoints.contains(currentSamplePoint)) {
-            
+
             ProcessedPollutantData point{
                 QString::fromStdString(row.getSampleDateTime()),
                 std::stod(row.getResult()),
@@ -316,10 +324,10 @@ QVector<ProcessedPollutantData> PollutantOverviewPage::processData(const QString
             data.append(point);
         }
     }
-    
+
     std::sort(data.begin(), data.end(),
         [](const auto& a, const auto& b) { return a.dateTime < b.dateTime; });
-    
+
     return data;
 }
 
@@ -327,14 +335,14 @@ void PollutantOverviewPage::handleChartPointClick(QScatterSeries* series, const 
 {
     QString pollutantName = searchCombo->currentText();
     if (!dataCache.contains(pollutantName)) return;
-    
+
     const auto& data = dataCache[pollutantName];
     QDateTime clickTime = QDateTime::fromMSecsSinceEpoch(point.x());
-    
+
     for (const auto& dataPoint : data) {
         if (dataPoint.samplingPoint == series->name() &&
             QDateTime::fromString(dataPoint.dateTime, Qt::ISODate).toMSecsSinceEpoch() == point.x()) {
-            
+
             QString tooltip = tooltipFormat
                 .arg(dataPoint.purpose)
                 .arg(dataPoint.materialType)
@@ -344,7 +352,7 @@ void PollutantOverviewPage::handleChartPointClick(QScatterSeries* series, const 
                 .arg(dataPoint.easting)
                 .arg(dataPoint.northing)
                 .arg(dataPoint.isCompliance ? tr("Yes") : tr("No"));
-            
+
             QToolTip::showText(QCursor::pos(), tooltip, chartView, QRect(), 5000);
             break;
         }
@@ -372,7 +380,7 @@ void PollutantOverviewPage::retranslateUi()
 
     // Update combobox
     searchCombo->setPlaceholderText(tr("Search pollutants"));
-    
+
     // Update button
     searchButton->setText(tr("Generate Chart"));
 
@@ -386,7 +394,6 @@ void PollutantOverviewPage::retranslateUi()
             chartView->chart()->setTitle(tr("Pollutant Levels Over Time"));
         }
 
-        // axes titles
         for (QAbstractAxis* axis : chartView->chart()->axes()) {
             if (axis->orientation() == Qt::Horizontal) {
                 axis->setTitleText(tr("Time"));
@@ -396,7 +403,6 @@ void PollutantOverviewPage::retranslateUi()
         }
     }
 
-    // Update tool tips
     tooltipFormat = tr("Purpose: %1\n"
                       "Material Type: %2\n"
                       "Result: %3 %4\n"
@@ -410,7 +416,7 @@ void PollutantOverviewPage::updateLists()
     searchCombo->clear();
     searchCombo->addItems(getAllPollutants());
     samplePointList->clear();
-    
+
     // Update sample points location
     QString currentPollutant = searchCombo->currentText();
     if (!currentPollutant.isEmpty()) {
