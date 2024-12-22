@@ -109,10 +109,14 @@ void ComplianceDashboardPage::populateFilters() {
         locations.insert(location);
         pollutants.insert(pollutant);
     }
+    QStringList sortedLocations = locations.values();
+    QStringList sortedPollutants = pollutants.values();
+    sortedLocations.sort();
+    sortedPollutants.sort();
 
-    locationFilter->addItems(locations.values());
-    pollutantFilter->addItems(pollutants.values());
-
+    //populate the filters
+    locationFilter->addItems(sortedLocations);
+    pollutantFilter->addItems(sortedPollutants);
 }
 // apply filters and upadte for pagination
 void ComplianceDashboardPage::onApplyFilters() {
