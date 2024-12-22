@@ -49,18 +49,25 @@ void PollutantOverviewPage::setupUI()
     samplePointList->setEditable(false);
     samplePointList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     samplePointList->setStyleSheet(
-        "QComboBox {"
-        "   padding: 8px;"
-        "   border: 1px solid rgb(193, 224, 254);"
-        "   border-radius: 4px;"
-        "   font-size: 14px;"
-        "}"
-        "QComboBox QAbstractItemView {"
-        "   border: 1px solid #ced4da;"
-        "   border-radius: 4px;"
-        "   background-color: white;"
-        "   selection-background-color: #e9ecef;"
-        "}"
+    "QListWidget {"
+    "   border: 1px solid #ced4da;"
+    "   border-radius: 4px;"
+    "   padding: 5px;"
+    "   background-color: white;"
+    "   color: #212529;"
+    "}"
+    "QListWidget::item {"
+    "   padding: 5px;"
+    "   background-color: #f8f9fa;"
+    "   color: #212529;"
+    "}"
+    "QListWidget::item:hover {"
+    "   background-color: #e2e6ea;"
+    "}"
+    "QListWidget::item:selected {"
+    "   background-color: #adb5bd;"
+    "   color: #ffffff;"
+    "}"
     );
     
     // Search Button
