@@ -37,6 +37,7 @@ public:
     explicit POPsPage(QTabWidget* tabWidget, waterQualityModel* model, QWidget* parent = nullptr);
     void updateChart();
     void loadComplianceThresholds(const QString& filePath);
+    void retranslateUi();
 
 private:
     void createChart();
@@ -47,6 +48,11 @@ private:
     // Pointers for widgets.
     QChartView *chartView;
     QChart *chart;
+    QDateTimeAxis* xAxis;
+    QValueAxis* yAxis;
+
+    QLabel *popsSummaryLabel;
+    QToolButton *infoButton;
     
     QTabWidget *tabWidget;
     waterQualityModel *model;
@@ -56,7 +62,7 @@ private:
     QMap<QString, double> complianceThresholdMap;
 
 private slots:
-    void showTooltip(const QPointF &point, bool state);
+    void showTooltip(const QPointF &point, bool state, const QString &detLabel);
     void filterDeterminand(const QString &label, bool visible);
 };
 

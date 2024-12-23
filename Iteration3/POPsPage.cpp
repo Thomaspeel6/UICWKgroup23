@@ -22,6 +22,24 @@ POPsPage::POPsPage(QTabWidget* tabWidget, waterQualityModel* model, QWidget* par
 
 void POPsPage::createChart()
 {
+    // Create POPs summary label
+    popsSummaryLabel = new QLabel(tr("POPs summary"), this);
+    infoButton = new QToolButton(this);
+    infoButton->setIcon(style()->standardIcon(QStyle::SP_MessageBoxInformation));
+
+    infoButton->setToolTip(
+        tr("<div style='font-size:10pt;'>"
+       "<p><b>Persistent Organic Pollutants (POPs)</b> are a global concern because they can:</p>"
+       "<ul>"
+         "<li>Be transported long-range through air, water, and migratory species</li>"
+         "<li>Persist in the environment</li>"
+         "<li>Bio-magnify and bio-accumulate in ecosystems</li>"
+         "<li>Have negative effects on human health and the environment</li>"
+         "<li>Be found in places where they had never been used, such as the Arctic regions</li>"
+       "</ul>"
+       "</div>")
+    );
+
     // Create default chart
     chart = new QChart();
     chart->setTitle(tr("Persistent Organic Pollutants"));
@@ -51,12 +69,18 @@ void POPsPage::arrangeWidgets()
     // Arrange check box and chart layout
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
+    QHBoxLayout* labelTooltipLayout = new QHBoxLayout;
+    labelTooltipLayout->addWidget(popsSummaryLabel);
+    labelTooltipLayout->addWidget(infoButton);
+    labelTooltipLayout->addStretch();
+
     QHBoxLayout* filterLayout = new QHBoxLayout;
     for (auto it = checkBoxMap.begin(); it != checkBoxMap.end(); ++it) {
         filterLayout->addWidget(it.value());
     }
     filterLayout->addStretch();
 
+    mainLayout->addLayout(labelTooltipLayout);
     mainLayout->addLayout(filterLayout);
     mainLayout->addWidget(chartView); 
     setLayout(mainLayout);
@@ -154,12 +178,12 @@ void POPsPage::updateChart()
     seriesMap.clear();
 
     // Create new axes each time
-    QDateTimeAxis* xAxis = new QDateTimeAxis;
+    xAxis = new QDateTimeAxis;
     xAxis->setFormat("yyyy-MM-dd");
     xAxis->setTitleText(tr("Date"));
     chart->addAxis(xAxis, Qt::AlignBottom);
 
-    QValueAxis* yAxis = new QValueAxis;
+    yAxis = new QValueAxis;
     yAxis->setTitleText(tr("Concentration (µg/L)"));
     chart->addAxis(yAxis, Qt::AlignLeft);
 
@@ -189,7 +213,9 @@ void POPsPage::updateChart()
         mainSeries->attachAxis(yAxis);
 
         // Connect for tooltips on hover
-        connect(mainSeries, &QLineSeries::hovered, this, &POPsPage::showTooltip);
+        connect(mainSeries, &QLineSeries::hovered, this, [=](const QPointF &point, bool state) {
+            showTooltip(point, state, label);
+        });
 
         // Store in seriesMap for filtering
         seriesMap[label] = mainSeries;
@@ -245,17 +271,102 @@ void POPsPage::filterDeterminand(const QString &label, bool visible) {
     }
 }
 
-void POPsPage::showTooltip(const QPointF &point, bool state)
+void POPsPage::showTooltip(const QPointF &point, bool state, const QString &detLabel)
 {
-    // Show date and result values on hover
+    // Show date and compliance values on hover
     if (state) {
-        qint64 xVal = (qint64)point.x();
+        qint64 xVal = static_cast<qint64>(point.x());
         QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(xVal);
-        QString msg = QString(tr("Date: %1\nValue: %2"))
-                .arg(dateTime.toString("yyyy-MM-dd"))
-                .arg(point.y());
-        QToolTip::showText(QCursor::pos(), msg, this);
+        QString dateString = dateTime.toString("yyyy-MM-dd");
+
+        double measuredVal = point.y();
+        QString measuredStr = QString::number(measuredVal, 'f', 3);
+
+        double thresholdVal = 0.0;
+        bool hasThreshold = false;
+        if (complianceThresholdMap.contains(detLabel)) {
+            thresholdVal = complianceThresholdMap[detLabel];
+            hasThreshold = true;
+        }
+
+        QString complianceStatus;
+        QString tooltipStyle;
+
+        if (hasThreshold) {
+            
+            if (measuredVal < thresholdVal * 0.8) {
+                complianceStatus = tr("Below Threshold (Compliant)");
+                tooltipStyle = "background-color: green; color: white; border: 1px solid black;";
+            }
+            else if (measuredVal > thresholdVal * 0.8 && measuredVal < thresholdVal) {
+                complianceStatus = tr("Slightly Above Threshold (Caution)");
+                tooltipStyle = "background-color: orange; color: black; border: 1px solid black;";
+            }
+            else {
+                complianceStatus = tr("Above Threshold (Non-compliant)");
+                tooltipStyle = "background-color: red; color: white; border: 1px solid black;";
+            }
+        } else {
+            complianceStatus = tr("No threshold data for this determinand");
+            tooltipStyle = "background-color: lightgray; color: black; border: 1px solid black;";
+        }
+
+        QString thresholdStr = QString::number(thresholdVal, 'f', 3);
+        QString html = QString("<div style='%1'>"
+                                "<b>%2</b><br>"
+                                "%3: %4 µg/L<br>"
+                                "%5: %6 µg/L<br>"
+                                "%7: %8"
+                               "</div>")
+                .arg(tooltipStyle)
+                .arg(dateString)
+                .arg(tr("Measured"))
+                .arg(measuredStr)
+                .arg(tr("Threshold"))
+                .arg(thresholdStr)
+                .arg(tr("Status"))
+                .arg(complianceStatus);
+
+        QToolTip::showText(QCursor::pos(), html, this);
+
     } else {
         QToolTip::hideText();
+    }
+}
+
+void POPsPage::retranslateUi()
+{
+    // Re-translate label text
+    if (popsSummaryLabel) {
+        popsSummaryLabel->setText(tr("POPs summary"));
+    }
+
+    // Re-translate the info button tooltip
+    if (infoButton) {
+        infoButton->setToolTip(
+            tr("<div style='font-size:10pt;'>"
+               "<p><b>Persistent Organic Pollutants (POPs)</b> are a global concern because they can:</p>"
+               "<ul>"
+                 "<li>Be transported long-range through air, water, and migratory species</li>"
+                 "<li>Persist in the environment</li>"
+                 "<li>Bio-magnify and bio-accumulate in ecosystems</li>"
+                 "<li>Have negative effects on human health and the environment</li>"
+                 "<li>Be found in places where they had never been used, such as the Arctic regions</li>"
+               "</ul>"
+               "</div>")
+        );
+    }
+
+    // Re-translate the chart title
+    if (chart) {
+        chart->setTitle(tr("Persistent Organic Pollutants"));
+    }
+
+    // Re-translate axis titles
+    if (xAxis) {
+        xAxis->setTitleText(tr("Date"));
+    }
+    if (yAxis) {
+        yAxis->setTitleText(tr("Concentration (µg/L)"));
     }
 }
