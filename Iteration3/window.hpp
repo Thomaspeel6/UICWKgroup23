@@ -6,7 +6,7 @@
 #include "model.hpp"
 #include "ComplianceDashboardPage.hpp"
 #include "FluorinatedCompoundsPage.hpp"
-#include "POPsPage.hpp"
+#include "PollutantOverviewPage.hpp"
 
 class QString;
 class QComboBox;
@@ -14,7 +14,6 @@ class QLabel;
 class QPushButton;
 class QTableView;
 class StatsDialog;
-class POPsPage;
 
 class waterQualityWindow: public QMainWindow
 {
@@ -22,12 +21,12 @@ class waterQualityWindow: public QMainWindow
 
 public:
     waterQualityWindow();
-    void changeLanguage(const QString& languageCode);
 
 private:
     void createMainWidget();
-    void retranslateUi();
-
+    //void createFileSelectors();
+    void createButtons();
+    void createToolBar();
     void createStatusBar();
     void addFileMenu();
     void addHelpMenu();
@@ -43,24 +42,19 @@ private:
     QPushButton* uploadComplianceDataButton;
     ComplianceDashboardPage* compliancePage;
     FluorinatedCompoundsPage* fluorinatedPage;
+    PollutantOverviewPage* pollutantOverviewPage;
     QTableView* table;
     QLabel* fileInfoLabel;
-    QLabel * complianceLabel;
     QTabWidget* tabWidget;
     StatsDialog* statsDialog;
     QProgressBar* progressBar;
-    QTranslator translator;
-    QString currentFileName;
-    POPsPage* popsPage;
 
-    private slots:
-        void uploadRealData();
-        void uploadComplianceData();
-        void startProgressBar(const QString& message);
-        void updateProgressBar(QTimer* timer, const QString& successMessage);
+private slots:
+    void uploadRealData();
+    void uploadComplianceData();
+    void startProgressBar(const QString& message);
+    void updateProgressBar(QTimer* timer, const QString& successMessage);
 
-        void onLanguageChanged();
-        void about();
-    signals:
-        void languageChanged(); // change language signal
+    void displayStats();
+    void about();
 };

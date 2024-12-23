@@ -105,6 +105,31 @@ void PollutantOverviewPage::setupUI()
     setupChart();
 }
 
+void PollutantOverviewPage::loadComplianceThresholds(const QString& filePath) 
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, "Error", "Unable to open Pollution thresholds file.");
+        return;
+    }
+
+    QTextStream in(&file);
+    complianceThreshold.clear();
+
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList fields = line.split(',');
+
+        if (fields.size() == 2) {
+            QString pollutant = fields[0].trimmed();
+            double threshold = fields[1].toDouble();
+            complianceThreshold[pollutant] = threshold;
+        }
+    }
+
+    file.close();
+}
+
 void PollutantOverviewPage::setupChart(const QString& pollutantName)
 {
     QChart* chart = new QChart();
@@ -129,9 +154,7 @@ void PollutantOverviewPage::setupChart(const QString& pollutantName)
         }
 
         dataCache.remove(pollutantName);
-
         dataCache[pollutantName] = processData(pollutantName, selectedSamplePoints);
-
         const auto& data = dataCache[pollutantName];
 
         if (!data.isEmpty()) {
@@ -155,46 +178,81 @@ void PollutantOverviewPage::setupChart(const QString& pollutantName)
                 }
             }
 
+            if (complianceThreshold.contains(pollutantName)) {
+                double thresholdVal = complianceThreshold[pollutantName];
+                minY = std::min(minY, thresholdVal);
+                maxY = std::max(maxY, thresholdVal);
+            }
+
+            double thresholdVal = complianceThreshold.value(pollutantName, -1);
+
             for (auto it = grouped.begin(); it != grouped.end(); ++it) {
                 QLineSeries* lineSeries = new QLineSeries();
                 QScatterSeries* scatterSeries = new QScatterSeries();
 
                 lineSeries->setName(it.key());
                 scatterSeries->setName(it.key());
+                
+                scatterSeries->setMarkerSize(15);
+
+                // set point and color
+                QVector<QPointF> points;
+                QVector<QColor> colors;
 
                 for (const auto& point : it.value()) {
                     QDateTime dateTime = QDateTime::fromString(point.dateTime, Qt::ISODate);
                     qreal x = dateTime.toMSecsSinceEpoch();
                     qreal y = point.result;
 
-                    lineSeries->append(x, y);
-                    scatterSeries->append(x, y);
+                    points.append(QPointF(x, y));
 
-                    QColor color = point.isCompliance ?
-                        (point.result > maxY * 0.7 ? QColor(255, 204, 0) : Qt::green) :
-                        Qt::red;
-
-                    lineSeries->setColor(color);
-                    scatterSeries->setColor(color);
+                    // color based on threshold
+                    QColor pointColor;
+                    if (thresholdVal > 0) {
+                        if (y > thresholdVal) {
+                            pointColor = Qt::red;
+                        } else if (y > thresholdVal * 0.7) {
+                            pointColor = QColor(255, 204, 0);  // yellow
+                        } else {
+                            pointColor = Qt::green;
+                        }
+                    } else {
+                        pointColor = Qt::green;
+                    }
+                    colors.append(pointColor);
                 }
 
-                scatterSeries->setMarkerSize(15);
-                connect(scatterSeries, &QScatterSeries::clicked, this,
-                        [this, scatterSeries](const QPointF& point) {
-                            handleChartPointClick(scatterSeries, point);
-                        });
+                // Add points to line
+                lineSeries->append(points);
+                lineSeries->setColor(QColor(128, 128, 128));  // Gray line
+
+                for (int i = 0; i < points.size(); ++i) {
+                    QScatterSeries* coloredPoint = new QScatterSeries();
+                    coloredPoint->setMarkerSize(15);
+                    coloredPoint->append(points[i]);
+                    coloredPoint->setColor(colors[i]);
+                    coloredPoint->setBrush(colors[i]);
+                    coloredPoint->setPen(QPen(colors[i]));
+                    
+                    connect(coloredPoint, &QScatterSeries::clicked, this,
+                            [this, coloredPoint](const QPointF& point) {
+                                handleChartPointClick(coloredPoint, point);
+                            });
+                    
+                    chart->addSeries(coloredPoint);
+                    coloredPoint->setName(it.key());
+                }
 
                 chart->addSeries(lineSeries);
-                chart->addSeries(scatterSeries);
             }
-
+            //set axis
             QDateTimeAxis* axisX = new QDateTimeAxis();
             QValueAxis* axisY = new QValueAxis();
 
             double yPadding = (maxY - minY) * 0.1;
             axisY->setRange(minY - yPadding, maxY + yPadding);
             axisX->setRange(minTime.addDays(-1), maxTime.addDays(1));
-
+            
             axisX->setFormat("yyyy-MM-dd");
             axisY->setLabelFormat("%.4f");
 
@@ -207,6 +265,25 @@ void PollutantOverviewPage::setupChart(const QString& pollutantName)
             for (QAbstractSeries* series : chart->series()) {
                 series->attachAxis(axisX);
                 series->attachAxis(axisY);
+            }
+
+            // Threshold line
+            if (complianceThreshold.contains(pollutantName)) {
+                double thresholdVal = complianceThreshold[pollutantName];
+                
+                QLineSeries* thresholdSeries = new QLineSeries();
+                thresholdSeries->append(minTime.toMSecsSinceEpoch(), thresholdVal);
+                thresholdSeries->append(maxTime.toMSecsSinceEpoch(), thresholdVal);
+
+                QPen dashedPen(Qt::black);
+                dashedPen.setStyle(Qt::DashLine);
+                dashedPen.setWidth(2);
+                thresholdSeries->setPen(dashedPen);
+
+                thresholdSeries->setName(pollutantName + tr(" Threshold"));
+                chart->addSeries(thresholdSeries);
+                thresholdSeries->attachAxis(axisX);
+                thresholdSeries->attachAxis(axisY);
             }
 
             chart->setTitle(tr("Pollutant Levels Over Time: %1").arg(pollutantName));

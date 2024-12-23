@@ -2,7 +2,9 @@
 #include <stdexcept>
 #include <iostream>
 
+
 #include "window.hpp"
+#include "stats.hpp"
 #include "PollutantOverviewPage.hpp"
 #include "POPsPage.hpp"
 #include "FluorinatedCompoundsPage.hpp"
@@ -15,15 +17,16 @@
 static const int MIN_WIDTH = 1000;
 
 
-waterQualityWindow::waterQualityWindow(): QMainWindow()
+waterQualityWindow::waterQualityWindow(): QMainWindow(), statsDialog(nullptr)
 {
     createMainWidget();
     //createFileSelectors();
-
+    createButtons();
+    createToolBar();
     createStatusBar();
     addFileMenu();
     addHelpMenu();
-    retranslateUi();
+
     setMinimumWidth(MIN_WIDTH);
     setWindowTitle(tr("Water Quality Tool"));
 }
@@ -39,24 +42,15 @@ void waterQualityWindow::createMainWidget()
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     table->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+
     RawData* rawData = new RawData(&model, this);
-    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(&model, this);
-    popsPage = new POPsPage(tabWidget, &model, this);
+    pollutantOverviewPage = new PollutantOverviewPage(&model, this);
+    POPsPage* popsPage = new POPsPage(tabWidget, this);
     fluorinatedPage = new FluorinatedCompoundsPage(&model, this);
     compliancePage = new ComplianceDashboardPage(&model, this);
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
 
-    // Connect language change signals
-    connect(this, &waterQualityWindow::languageChanged, dashboardPage, &DashboardPage::retranslateUi);
-    connect(this, &waterQualityWindow::languageChanged, pollutantOverviewPage, &PollutantOverviewPage::retranslateUi);
-    connect(this, &waterQualityWindow::languageChanged, fluorinatedPage, &FluorinatedCompoundsPage::retranslateUi);
-    connect(this, &waterQualityWindow::languageChanged, compliancePage, &ComplianceDashboardPage::retranslateUi);
-    connect(this, &waterQualityWindow::languageChanged, this, &waterQualityWindow::retranslateUi);
-
-    // Connect dashboard request for language change
-    connect(dashboardPage, &DashboardPage::requestLanguageChange, this, &waterQualityWindow::changeLanguage);
-
-    // Add tabs in the correct order
+    // Add tabs to the tab widget
     tabWidget->addTab(rawData, tr("Raw Data"));
     tabWidget->addTab(dashboardPage, tr("Dashboard"));
     tabWidget->addTab(pollutantOverviewPage, tr("Pollutant Overview"));
@@ -64,11 +58,12 @@ void waterQualityWindow::createMainWidget()
     tabWidget->addTab(fluorinatedPage, tr("Fluorinated Compounds"));
     tabWidget->addTab(compliancePage, tr("Compliance Dashboard"));
 
-    // Ensure the first active tab is the dashboard
     tabWidget->setCurrentIndex(1);
 
     setCentralWidget(tabWidget);
 }
+
+
 void waterQualityWindow::createStatusBar()
 {
     // create the status bar
@@ -79,7 +74,7 @@ void waterQualityWindow::createStatusBar()
     status->addWidget(fileInfoLabel);
 
     // compliace data uploaded label
-    complianceLabel = new QLabel(tr("Compliance Data Uploaded:"), this);
+    QLabel* complianceLabel = new QLabel(tr("Compliance Data Uploaded:"), this);
     status->addWidget(complianceLabel);
 
     // compliance data checkbox
@@ -176,17 +171,13 @@ void waterQualityWindow::uploadRealData()
         model.updateFromFile(filePath);
 
         QFileInfo fileInfo(filePath);
-        currentFileName = fileInfo.fileName(); // Store the file name
+        QString fileName = fileInfo.fileName();
 
-        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(currentFileName));
+        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(fileName));
 
 
         QTimer* timer = new QTimer(this);
         updateProgressBar(timer, tr("Data loaded successfully!"));
-
-        if (popsPage) {
-            popsPage->updateChart();
-        }
 
 
         table->resizeColumnsToContents();
@@ -210,8 +201,7 @@ void waterQualityWindow::uploadComplianceData() {
         startProgressBar(tr("Loading compliance data..."));
         compliancePage->loadComplianceThresholds(filePath);
         fluorinatedPage->loadFluorinatedThresholds(filePath);
-        popsPage->loadComplianceThresholds(filePath);
-
+        pollutantOverviewPage->loadComplianceThresholds(filePath);
 
 
         QTimer* timer = new QTimer(this);
@@ -224,6 +214,22 @@ void waterQualityWindow::uploadComplianceData() {
     }
 }
 
+
+void waterQualityWindow::displayStats()
+{
+    if (model.hasData()) {
+        if (statsDialog == nullptr) {
+            statsDialog = new StatsDialog(this);
+        }
+
+        statsDialog->update("N/A", "N/A"); // Changed from numerical values
+
+        statsDialog->show();
+        statsDialog->raise();
+        statsDialog->activateWindow();
+    }
+}
+
 void waterQualityWindow::about()
 {
     QMessageBox::about(this, tr("About Water Quality Tool"),
@@ -231,54 +237,16 @@ void waterQualityWindow::about()
       tr("a CSV file."));
 }
 
+void waterQualityWindow::createButtons() {
+    statsButton = new QPushButton("Statistics");
 
-void waterQualityWindow::changeLanguage(const QString& languageCode) {
-    qApp->removeTranslator(&translator);
-
-    QString path = QCoreApplication::applicationDirPath() + "/translations/translations_" + languageCode + ".qm";
-    if (translator.load(path)) {
-        qApp->installTranslator(&translator);
-        std::cout << "Successfully loaded translation for language: " << languageCode.toStdString() << std::endl;
-        emit languageChanged(); // Notify all connected components
-    } else {
-        std::cout << "Failed to load translation file from: " << path.toStdString() << std::endl;
-    }
-
-}
-void waterQualityWindow::onLanguageChanged() {
-    // Update dynamic elements in the main window
-    setWindowTitle(tr("Water Quality Tool"));
+    connect(statsButton, SIGNAL(clicked()), this, SLOT(displayStats()));
 }
 
-void waterQualityWindow::retranslateUi() {
-    std::cout << "waterQualityWindow::retranslateUi() called" << std::endl;
+void waterQualityWindow::createToolBar() {
+    QToolBar* toolBar = new QToolBar();
 
-    // Update main window title
-    setWindowTitle(tr("Water Quality Tool"));
+    toolBar->addWidget(statsButton);
 
-    // Update tab titles
-    tabWidget->setTabText(0, tr("Raw Data"));
-    tabWidget->setTabText(1, tr("Dashboard"));
-    tabWidget->setTabText(2, tr("Pollutant Overview"));
-    tabWidget->setTabText(3, tr("POPs"));
-    tabWidget->setTabText(4, tr("Fluorinated Compounds")); // Correct tab 4
-    tabWidget->setTabText(5, tr("Compliance Dashboard")); // Correct tab 5
-
-    // Update status bar
-    if (currentFileName.isEmpty()) {
-        fileInfoLabel->setText(tr("Current File: <none>")); 
-    } else {
-        fileInfoLabel->setText(QString(tr("Loaded File: %1")).arg(currentFileName)); 
-    }
-    if (complianceLabel) {
-        complianceLabel->setText(tr("Compliance Data Uploaded:"));
-    } else {
-        std::cerr << "Error: complianceLabel is nullptr!" << std::endl;
-    }
-    progressBar->setFormat(tr("%p% Loaded"));
-
-    // Update menu bar
-    menuBar()->clear(); // Rebuild menus to reflect translations
-    addFileMenu();
-    addHelpMenu();
+    addToolBar(Qt::TopToolBarArea, toolBar);
 }

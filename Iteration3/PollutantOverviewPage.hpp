@@ -27,7 +27,7 @@ class PollutantOverviewPage : public QWidget
 
 public:
     explicit PollutantOverviewPage(waterQualityModel* model, QWidget *parent = nullptr);
-
+    void loadComplianceThresholds(const QString& filePath);
     public slots:
         void handleDataUpdate(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QList<int>& roles = QList<int>());
     void retranslateUi();
@@ -37,12 +37,15 @@ private:
     void setupChart(const QString& pollutantName = QString());
     void connectSignals();
     void updateSamplePoints(const QString& pollutantName);
+    
 
     QStringList getAllPollutants() const;
     QStringList getSamplePoints(const QString& pollutantName) const;
     void updateLists();
     QVector<ProcessedPollutantData> processData(const QString& pollutantName, const QStringList& selectedSamplePoints);
     void handleChartPointClick(QScatterSeries* series, const QPointF& point);
+
+    QMap<QString, double> complianceThreshold;
 
     QComboBox* searchCombo;
     QComboBox* samplePointList;
