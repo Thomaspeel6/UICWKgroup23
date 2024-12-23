@@ -7,6 +7,7 @@
 #include "ComplianceDashboardPage.hpp"
 #include "FluorinatedCompoundsPage.hpp"
 #include "POPsPage.hpp"
+#include "PollutantOverviewPage.hpp"
 
 class QString;
 class QComboBox;
@@ -43,6 +44,7 @@ private:
     QPushButton* uploadComplianceDataButton;
     ComplianceDashboardPage* compliancePage;
     FluorinatedCompoundsPage* fluorinatedPage;
+    PollutantOverviewPage* pollutantOverviewPage;
     QTableView* table;
     QLabel* fileInfoLabel;
     QLabel * complianceLabel;

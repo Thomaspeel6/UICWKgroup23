@@ -40,7 +40,7 @@ void waterQualityWindow::createMainWidget()
     table->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     RawData* rawData = new RawData(&model, this);
-    PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(&model, this);
+    pollutantOverviewPage = new PollutantOverviewPage(&model, this);
     popsPage = new POPsPage(tabWidget, &model, this);
     fluorinatedPage = new FluorinatedCompoundsPage(&model, this);
     compliancePage = new ComplianceDashboardPage(&model, this);
@@ -211,6 +211,7 @@ void waterQualityWindow::uploadComplianceData() {
         compliancePage->loadComplianceThresholds(filePath);
         fluorinatedPage->loadFluorinatedThresholds(filePath);
         popsPage->loadComplianceThresholds(filePath);
+        pollutantOverviewPage->loadComplianceThresholds(filePath);
 
 
 
