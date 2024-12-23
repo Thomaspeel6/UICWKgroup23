@@ -6,6 +6,7 @@
 #include "model.hpp"
 #include "ComplianceDashboardPage.hpp"
 #include "FluorinatedCompoundsPage.hpp"
+#include "POPsPage.hpp"
 
 class QString;
 class QComboBox;
@@ -13,6 +14,7 @@ class QLabel;
 class QPushButton;
 class QTableView;
 class StatsDialog;
+class POPsPage;
 
 class waterQualityWindow: public QMainWindow
 {
@@ -49,6 +51,7 @@ private:
     QProgressBar* progressBar;
     QTranslator translator;
     QString currentFileName;
+    POPsPage* popsPage;
 
     private slots:
         void uploadRealData();

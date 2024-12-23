@@ -41,7 +41,7 @@ void waterQualityWindow::createMainWidget()
 
     RawData* rawData = new RawData(&model, this);
     PollutantOverviewPage* pollutantOverviewPage = new PollutantOverviewPage(&model, this);
-    POPsPage* popsPage = new POPsPage(tabWidget, this);
+    popsPage = new POPsPage(tabWidget, &model, this);
     fluorinatedPage = new FluorinatedCompoundsPage(&model, this);
     compliancePage = new ComplianceDashboardPage(&model, this);
     DashboardPage* dashboardPage = new DashboardPage(tabWidget, this);
@@ -184,6 +184,10 @@ void waterQualityWindow::uploadRealData()
         QTimer* timer = new QTimer(this);
         updateProgressBar(timer, tr("Data loaded successfully!"));
 
+        if (popsPage) {
+            popsPage->updateChart();
+        }
+
 
         table->resizeColumnsToContents();
     } catch (const std::exception& error) {
@@ -206,6 +210,7 @@ void waterQualityWindow::uploadComplianceData() {
         startProgressBar(tr("Loading compliance data..."));
         compliancePage->loadComplianceThresholds(filePath);
         fluorinatedPage->loadFluorinatedThresholds(filePath);
+        popsPage->loadComplianceThresholds(filePath);
 
 
 
