@@ -24,10 +24,10 @@ void DashboardPage::setupDashboard() {
 
     QGridLayout *gridLayout = new QGridLayout();
 
-    pollutantBtn = setCard(tr("Pollutant Overview"), "red");
-    popsBtn = setCard(tr("POPs"), "orange");
-    fluorinatedBtn = setCard(tr("Fluorinated Compounds"), "orange");
-    complianceBtn = setCard(tr("Compliance"), "green");
+    pollutantBtn = setCard(tr("Pollutant Overview"), "blue");
+    popsBtn = setCard(tr("POPs"), "blue");
+    fluorinatedBtn = setCard(tr("Fluorinated Compounds"), "blue");
+    complianceBtn = setCard(tr("Compliance"), "blue");
 
     gridLayout->addWidget(pollutantBtn, 0, 0);
     gridLayout->addWidget(popsBtn, 0, 1);
