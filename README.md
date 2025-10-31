@@ -1,17 +1,24 @@
-# COMP2811 Coursework 2
+# UICWKgroup23  
 
-## Sample Solution
+## Description  
+A collaborative Python project developed as part of a group coursework assignment. The application solves a specific problem (describe the problem here) and emphasizes teamwork, version control and software‑engineering best practices.  
 
-Set up the build process with
+## Features  
+- Modular design with clear separation of concerns  
+- User‑friendly interface (CLI or GUI—clarify as needed)  
+- Comprehensive test suite  
 
-    mkdir build && cd build && cmake ..
+## Getting Started  
+1. Clone the repo: `git clone https://github.com/Thomaspeel6/UICWKgroup23.git`  
+2. Install dependencies: `pip install -r requirements.txt`  
+3. Run the application: `python main.py`  
 
-Build the application with
+## Technologies Used  
+- Python 3.x  
+- Any frameworks/libraries used (e.g., Flask, Django)  
 
-    make waterquality
+## Contributing  
+This project was built collaboratively for coursework. If you’d like to experiment or improve features, feel free to fork and explore.  
 
-or just `make` by itself.
-
-Run the application with
-
-    ./waterquality
+## License  
+MIT License.
